@@ -13,6 +13,7 @@ export interface Product {
   sku: string;
   stock_quantity: number;
   is_active: boolean;
+  created_at: string;
   categories?: {
     name: string;
   };

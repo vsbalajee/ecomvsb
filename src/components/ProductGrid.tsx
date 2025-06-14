@@ -44,7 +44,10 @@ const ProductGrid = () => {
           return b.price - a.price;
         case 'newest':
         default:
-          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+          // Handle case where created_at might not exist
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
       }
     });
 
