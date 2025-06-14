@@ -32,7 +32,7 @@ export const useCart = () => {
         .from('cart_items')
         .select(`
           *,
-          products(id, name, price, image_url, stock_quantity)
+          products!fk_cart_items_product(id, name, price, image_url, stock_quantity)
         `)
         .eq('user_id', user.id);
 
@@ -127,12 +127,12 @@ export const useCart = () => {
           .from('cart_items')
           .select(`
             *,
-            products(stock_quantity, name)
+            products!fk_cart_items_product(stock_quantity, name)
           `)
           .eq('id', itemId)
           .single();
 
-        if (cartItem && quantity > cartItem.products.stock_quantity) {
+        if (cartItem && cartItem.products && quantity > cartItem.products.stock_quantity) {
           throw new Error(`Only ${cartItem.products.stock_quantity} units available`);
         }
 

@@ -37,7 +37,7 @@ export const useOrders = (userId?: string) => {
           *,
           order_items(
             *,
-            products(name, image_url)
+            products!fk_order_items_product(name, image_url)
           )
         `)
         .eq('user_id', userId)
@@ -60,7 +60,7 @@ export const useAllOrders = () => {
           *,
           order_items(
             *,
-            products(name, image_url)
+            products!fk_order_items_product(name, image_url)
           ),
           profiles(full_name, email)
         `)

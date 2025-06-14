@@ -30,8 +30,8 @@ export const useProducts = () => {
         .from('products')
         .select(`
           *,
-          categories(name),
-          suppliers(name)
+          categories!fk_products_category(name),
+          suppliers!fk_products_supplier(name)
         `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
@@ -55,8 +55,8 @@ export const useProductsByCategory = (categoryId?: string) => {
         .from('products')
         .select(`
           *,
-          categories(name),
-          suppliers(name)
+          categories!fk_products_category(name),
+          suppliers!fk_products_supplier(name)
         `)
         .eq('is_active', true)
         .eq('category_id', categoryId);
