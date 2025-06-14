@@ -1,5 +1,5 @@
 
-import { Search, ShoppingCart, User, Menu, LogOut } from 'lucide-react';
+import { Search, User, Menu, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import CartDropdown from './CartDropdown';
 
 const Header = () => {
   const { user, signOut } = useAuth();
@@ -92,10 +93,7 @@ const Header = () => {
               <span className="text-sm font-bold">& Orders</span>
             </Button>
             
-            <Button variant="ghost" className="flex items-center text-white hover:bg-gray-700">
-              <ShoppingCart className="h-6 w-6" />
-              <span className="ml-1 text-orange-400 font-bold">0</span>
-            </Button>
+            <CartDropdown />
           </div>
         </div>
       </div>
