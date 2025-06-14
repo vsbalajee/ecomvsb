@@ -85,9 +85,12 @@ const Checkout = () => {
       // Clear the cart on successful order
       clearCart();
 
+      // Handle case where orderId might be null
+      const orderIdString = orderId ? orderId.toString().slice(0, 8) : 'unknown';
+
       toast({
         title: "Order Placed Successfully!",
-        description: `Your order #${orderId.toString().slice(0, 8)} has been placed. Thank you for your purchase!`,
+        description: `Your order #${orderIdString} has been placed. Thank you for your purchase!`,
       });
 
       navigate('/orders');

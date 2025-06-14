@@ -13,18 +13,15 @@ export const useUserRole = () => {
     queryFn: async () => {
       if (!user?.id) return null;
       
-      const { data, error } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id)
-        .single();
+      // Since user_roles table might not be in types yet, use RPC call
+      const { data, error } = await supabase.rpc('get_current_user_role');
 
       if (error) {
         console.error('Error fetching user role:', error);
         return 'user' as AppRole; // Default to user role
       }
       
-      return data.role as AppRole;
+      return (data || 'user') as AppRole;
     },
     enabled: !!user?.id,
   });
