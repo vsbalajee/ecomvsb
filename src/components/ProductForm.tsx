@@ -12,6 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Category } from '@/hooks/useCategories';
 import { useQueryClient } from '@tanstack/react-query';
 import AdminProtectedComponent from './AdminProtectedComponent';
+import ImageUpload from './ImageUpload';
 
 interface ProductFormProps {
   categories: Category[];
@@ -45,19 +46,10 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
     },
   });
 
-  const validateImageUrl = (url: string): boolean => {
-    try {
-      new URL(url);
-      return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
-    } catch {
-      return false;
-    }
-  };
-
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
 
-    // Client-side validation
+    // Enhanced client-side validation
     if (data.price <= 0) {
       toast({
         title: "Invalid Price",
@@ -78,10 +70,10 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
       return;
     }
 
-    if (!validateImageUrl(data.image_url)) {
+    if (!data.image_url) {
       toast({
-        title: "Invalid Image URL",
-        description: "Please provide a valid image URL ending with .jpg, .jpeg, .png, .gif, or .webp",
+        title: "Image Required",
+        description: "Please upload an image or provide an image URL.",
         variant: "destructive",
       });
       setIsSubmitting(false);
@@ -100,7 +92,7 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
       if (error) {
         console.error('Error adding product:', error);
         
-        // Handle specific database errors
+        // Enhanced error handling
         if (error.message.includes('duplicate key')) {
           toast({
             title: "Duplicate SKU",
@@ -111,6 +103,12 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
           toast({
             title: "Permission Denied",
             description: "You don't have permission to add products.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes('foreign key')) {
+          toast({
+            title: "Invalid Category",
+            description: "The selected category is invalid.",
             variant: "destructive",
           });
         } else {
@@ -146,7 +144,7 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
   return (
     <AdminProtectedComponent fallback={null}>
       <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add New Product</DialogTitle>
             <DialogDescription>
@@ -303,17 +301,15 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
               <FormField
                 control={form.control}
                 name="image_url"
-                rules={{ 
-                  required: 'Image URL is required',
-                  validate: {
-                    validUrl: (value) => validateImageUrl(value) || 'Please provide a valid image URL ending with .jpg, .jpeg, .png, .gif, or .webp'
-                  }
-                }}
+                rules={{ required: 'Image is required' }}
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Image URL</FormLabel>
+                    <FormLabel>Product Image</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter image URL" {...field} />
+                      <ImageUpload
+                        onImageSelect={field.onChange}
+                        currentImage={field.value}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
