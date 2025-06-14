@@ -14,7 +14,7 @@ export const useUserRole = () => {
       if (!user?.id) return null;
       
       // Since user_roles table might not be in types yet, use RPC call
-      const { data, error } = await supabase.rpc('get_current_user_role');
+      const { data, error } = await supabase.rpc('get_current_user_role', {});
 
       if (error) {
         console.error('Error fetching user role:', error);

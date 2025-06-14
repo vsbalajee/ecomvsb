@@ -86,7 +86,7 @@ const Checkout = () => {
       clearCart();
 
       // Handle case where orderId might be null
-      const orderIdString = orderId ? orderId.toString().slice(0, 8) : 'unknown';
+      const orderIdString = orderId ? String(orderId).slice(0, 8) : 'unknown';
 
       toast({
         title: "Order Placed Successfully!",
