@@ -36,7 +36,10 @@ export const useCart = () => {
         `)
         .eq('user_id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching cart:', error);
+        throw new Error('Failed to load cart items');
+      }
       return data as CartItem[];
     },
     enabled: !!user?.id,
@@ -46,6 +49,21 @@ export const useCart = () => {
     mutationFn: async ({ productId, quantity = 1 }: { productId: string; quantity?: number }) => {
       if (!user?.id) throw new Error('User not authenticated');
 
+      if (quantity <= 0) {
+        throw new Error('Quantity must be greater than 0');
+      }
+
+      // Check product stock before adding
+      const { data: product, error: productError } = await supabase
+        .from('products')
+        .select('stock_quantity, name')
+        .eq('id', productId)
+        .single();
+
+      if (productError) {
+        throw new Error('Product not found');
+      }
+
       // Check if item already exists in cart
       const { data: existingItem } = await supabase
         .from('cart_items')
@@ -54,11 +72,17 @@ export const useCart = () => {
         .eq('product_id', productId)
         .single();
 
+      const totalQuantity = existingItem ? existingItem.quantity + quantity : quantity;
+
+      if (totalQuantity > product.stock_quantity) {
+        throw new Error(`Only ${product.stock_quantity} units of ${product.name} are available`);
+      }
+
       if (existingItem) {
         // Update quantity
         const { error } = await supabase
           .from('cart_items')
-          .update({ quantity: existingItem.quantity + quantity })
+          .update({ quantity: totalQuantity })
           .eq('id', existingItem.id);
         
         if (error) throw error;
@@ -78,10 +102,10 @@ export const useCart = () => {
         description: "Item has been added to your cart successfully.",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
-        description: "Failed to add item to cart. Please try again.",
+        description: error.message || "Failed to add item to cart. Please try again.",
         variant: "destructive",
       });
       console.error('Add to cart error:', error);
@@ -98,6 +122,20 @@ export const useCart = () => {
         
         if (error) throw error;
       } else {
+        // Check stock before updating
+        const { data: cartItem } = await supabase
+          .from('cart_items')
+          .select(`
+            *,
+            products(stock_quantity, name)
+          `)
+          .eq('id', itemId)
+          .single();
+
+        if (cartItem && quantity > cartItem.products.stock_quantity) {
+          throw new Error(`Only ${cartItem.products.stock_quantity} units available`);
+        }
+
         const { error } = await supabase
           .from('cart_items')
           .update({ quantity })
@@ -108,6 +146,13 @@ export const useCart = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update cart item.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -127,6 +172,14 @@ export const useCart = () => {
         description: "Item has been removed from your cart.",
       });
     },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to remove item from cart.",
+        variant: "destructive",
+      });
+      console.error('Remove from cart error:', error);
+    },
   });
 
   const clearCartMutation = useMutation({
@@ -142,6 +195,9 @@ export const useCart = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cart'] });
+    },
+    onError: (error) => {
+      console.error('Clear cart error:', error);
     },
   });
 

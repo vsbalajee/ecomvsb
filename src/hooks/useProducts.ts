@@ -36,7 +36,10 @@ export const useProducts = () => {
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching products:', error);
+        throw new Error('Failed to load products. Please try again.');
+      }
       return data as Product[];
     },
   });
@@ -46,6 +49,8 @@ export const useProductsByCategory = (categoryId?: string) => {
   return useQuery({
     queryKey: ['products', 'category', categoryId],
     queryFn: async () => {
+      if (!categoryId) return [];
+      
       let query = supabase
         .from('products')
         .select(`
@@ -53,15 +58,15 @@ export const useProductsByCategory = (categoryId?: string) => {
           categories(name),
           suppliers(name)
         `)
-        .eq('is_active', true);
-
-      if (categoryId) {
-        query = query.eq('category_id', categoryId);
-      }
+        .eq('is_active', true)
+        .eq('category_id', categoryId);
 
       const { data, error } = await query.order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching products by category:', error);
+        throw new Error('Failed to load products. Please try again.');
+      }
       return data as Product[];
     },
     enabled: !!categoryId,

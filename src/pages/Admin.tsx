@@ -1,23 +1,54 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProducts } from '@/hooks/useProducts';
 import { useAllOrders } from '@/hooks/useOrders';
 import { useCategories } from '@/hooks/useCategories';
+import { useIsAdmin } from '@/hooks/useUserRole';
 import Header from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Plus, Package, ShoppingCart, Users, DollarSign, AlertTriangle } from 'lucide-react';
 import ProductForm from '@/components/ProductForm';
+import { useToast } from '@/hooks/use-toast';
 
 const Admin = () => {
   const { data: products } = useProducts();
   const { data: orders } = useAllOrders();
   const { data: categories } = useCategories();
   const [showProductForm, setShowProductForm] = useState(false);
+  const isAdmin = useIsAdmin();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (isAdmin === false) {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access the admin dashboard.",
+        variant: "destructive",
+      });
+      navigate('/');
+    }
+  }, [isAdmin, navigate, toast]);
+
+  // Show loading while checking admin status
+  if (isAdmin === undefined) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-lg">Checking permissions...</div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not admin (will redirect)
+  if (!isAdmin) {
+    return null;
+  }
 
   const lowStockProducts = products?.filter(p => (p.stock_quantity || 0) < 10) || [];
   const totalRevenue = orders?.reduce((sum, order) => sum + order.total_amount, 0) || 0;
@@ -104,32 +135,36 @@ const Admin = () => {
                 <CardDescription>Manage and track customer orders</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Order ID</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Total</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {orders?.slice(0, 10).map((order: any) => (
-                      <TableRow key={order.id}>
-                        <TableCell className="font-medium">#{order.id.slice(0, 8)}</TableCell>
-                        <TableCell>{order.profiles?.full_name || order.profiles?.email || 'Unknown'}</TableCell>
-                        <TableCell>${order.total_amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Badge className={`${getStatusColor(order.status)} text-white`}>
-                            {order.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                {!orders || orders.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No orders found.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Order ID</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Date</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {orders.slice(0, 10).map((order: any) => (
+                        <TableRow key={order.id}>
+                          <TableCell className="font-medium">#{order.id.slice(0, 8)}</TableCell>
+                          <TableCell>{order.profiles?.full_name || order.profiles?.email || 'Unknown'}</TableCell>
+                          <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                          <TableCell>
+                            <Badge className={`${getStatusColor(order.status)} text-white`}>
+                              {order.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -141,44 +176,48 @@ const Admin = () => {
                 <CardDescription>View and manage your product catalog</CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Stock</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {products?.map((product) => (
-                      <TableRow key={product.id}>
-                        <TableCell>
-                          <div className="flex items-center space-x-3">
-                            <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded" />
-                            <div>
-                              <div className="font-medium">{product.name}</div>
-                              <div className="text-sm text-gray-500">{product.sku}</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>{product.categories?.name}</TableCell>
-                        <TableCell>${product.price}</TableCell>
-                        <TableCell>
-                          <span className={(product.stock_quantity || 0) < 10 ? 'text-red-600 font-medium' : ''}>
-                            {product.stock_quantity}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                            {product.is_active ? 'Active' : 'Inactive'}
-                          </Badge>
-                        </TableCell>
+                {!products || products.length === 0 ? (
+                  <p className="text-center text-gray-500 py-8">No products found.</p>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Product</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Price</TableHead>
+                        <TableHead>Stock</TableHead>
+                        <TableHead>Status</TableHead>
                       </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                    </TableHeader>
+                    <TableBody>
+                      {products.map((product) => (
+                        <TableRow key={product.id}>
+                          <TableCell>
+                            <div className="flex items-center space-x-3">
+                              <img src={product.image_url} alt={product.name} className="w-12 h-12 object-cover rounded" />
+                              <div>
+                                <div className="font-medium">{product.name}</div>
+                                <div className="text-sm text-gray-500">{product.sku}</div>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{product.categories?.name}</TableCell>
+                          <TableCell>${product.price}</TableCell>
+                          <TableCell>
+                            <span className={(product.stock_quantity || 0) < 10 ? 'text-red-600 font-medium' : ''}>
+                              {product.stock_quantity}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant={product.is_active ? 'default' : 'secondary'}>
+                              {product.is_active ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
               </CardContent>
             </Card>
           </TabsContent>

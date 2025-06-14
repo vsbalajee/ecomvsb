@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Category } from '@/hooks/useCategories';
 import { useQueryClient } from '@tanstack/react-query';
+import { useIsAdmin } from '@/hooks/useUserRole';
 
 interface ProductFormProps {
   categories: Category[];
@@ -31,6 +32,7 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const isAdmin = useIsAdmin();
   
   const form = useForm<ProductFormData>({
     defaultValues: {
@@ -44,8 +46,59 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
     },
   });
 
+  // Don't render if user is not admin
+  if (!isAdmin) {
+    toast({
+      title: "Access Denied",
+      description: "You don't have permission to add products.",
+      variant: "destructive",
+    });
+    onClose();
+    return null;
+  }
+
+  const validateImageUrl = (url: string): boolean => {
+    try {
+      new URL(url);
+      return /\.(jpg|jpeg|png|gif|webp)$/i.test(url);
+    } catch {
+      return false;
+    }
+  };
+
   const onSubmit = async (data: ProductFormData) => {
     setIsSubmitting(true);
+
+    // Client-side validation
+    if (data.price <= 0) {
+      toast({
+        title: "Invalid Price",
+        description: "Price must be greater than 0.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (data.stock_quantity < 0) {
+      toast({
+        title: "Invalid Stock",
+        description: "Stock quantity cannot be negative.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!validateImageUrl(data.image_url)) {
+      toast({
+        title: "Invalid Image URL",
+        description: "Please provide a valid image URL ending with .jpg, .jpeg, .png, .gif, or .webp",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const { error } = await supabase
@@ -56,7 +109,31 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
           is_active: true,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error adding product:', error);
+        
+        // Handle specific database errors
+        if (error.message.includes('duplicate key')) {
+          toast({
+            title: "Duplicate SKU",
+            description: "A product with this SKU already exists.",
+            variant: "destructive",
+          });
+        } else if (error.message.includes('permission denied')) {
+          toast({
+            title: "Permission Denied",
+            description: "You don't have permission to add products.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to add product. Please check your input and try again.",
+            variant: "destructive",
+          });
+        }
+        return;
+      }
 
       toast({
         title: "Product Added",
@@ -67,10 +144,10 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       onClose();
     } catch (error) {
-      console.error('Error adding product:', error);
+      console.error('Unexpected error adding product:', error);
       toast({
-        title: "Error",
-        description: "Failed to add product. Please try again.",
+        title: "Unexpected Error",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -93,7 +170,11 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
             <FormField
               control={form.control}
               name="name"
-              rules={{ required: 'Product name is required' }}
+              rules={{ 
+                required: 'Product name is required',
+                minLength: { value: 2, message: 'Name must be at least 2 characters' },
+                maxLength: { value: 100, message: 'Name must be less than 100 characters' }
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Name</FormLabel>
@@ -108,6 +189,9 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
             <FormField
               control={form.control}
               name="description"
+              rules={{
+                maxLength: { value: 500, message: 'Description must be less than 500 characters' }
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Description</FormLabel>
@@ -123,7 +207,11 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
               <FormField
                 control={form.control}
                 name="price"
-                rules={{ required: 'Price is required', min: { value: 0.01, message: 'Price must be greater than 0' } }}
+                rules={{ 
+                  required: 'Price is required', 
+                  min: { value: 0.01, message: 'Price must be greater than 0' },
+                  max: { value: 99999.99, message: 'Price must be less than $100,000' }
+                }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Price ($)</FormLabel>
@@ -131,9 +219,11 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
                       <Input 
                         type="number" 
                         step="0.01" 
+                        min="0.01"
+                        max="99999.99"
                         placeholder="0.00" 
                         {...field} 
-                        onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                        onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -144,16 +234,22 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
               <FormField
                 control={form.control}
                 name="stock_quantity"
-                rules={{ required: 'Stock quantity is required', min: { value: 0, message: 'Stock cannot be negative' } }}
+                rules={{ 
+                  required: 'Stock quantity is required', 
+                  min: { value: 0, message: 'Stock cannot be negative' },
+                  max: { value: 999999, message: 'Stock must be less than 1,000,000' }
+                }}
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Stock Quantity</FormLabel>
                     <FormControl>
                       <Input 
                         type="number" 
+                        min="0"
+                        max="999999"
                         placeholder="0" 
                         {...field} 
-                        onChange={(e) => field.onChange(parseInt(e.target.value))}
+                        onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -191,12 +287,24 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
             <FormField
               control={form.control}
               name="sku"
-              rules={{ required: 'SKU is required' }}
+              rules={{ 
+                required: 'SKU is required',
+                pattern: {
+                  value: /^[A-Z0-9-_]+$/,
+                  message: 'SKU can only contain uppercase letters, numbers, hyphens, and underscores'
+                },
+                minLength: { value: 3, message: 'SKU must be at least 3 characters' },
+                maxLength: { value: 20, message: 'SKU must be less than 20 characters' }
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>SKU</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter product SKU" {...field} />
+                    <Input 
+                      placeholder="Enter product SKU (e.g., PROD-001)" 
+                      {...field}
+                      onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -206,7 +314,12 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
             <FormField
               control={form.control}
               name="image_url"
-              rules={{ required: 'Image URL is required' }}
+              rules={{ 
+                required: 'Image URL is required',
+                validate: {
+                  validUrl: (value) => validateImageUrl(value) || 'Please provide a valid image URL ending with .jpg, .jpeg, .png, .gif, or .webp'
+                }
+              }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Image URL</FormLabel>

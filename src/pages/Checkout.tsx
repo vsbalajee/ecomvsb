@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -51,60 +50,52 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // Create the order
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          user_id: user.id,
-          total_amount: cartTotal,
-          shipping_address: shippingAddress,
-          status: 'pending'
-        })
-        .select()
-        .single();
-
-      if (orderError) throw orderError;
-
-      // Create order items
-      const orderItems = cart.map(item => ({
-        order_id: order.id,
+      // Prepare cart data for the secure checkout function
+      const cartItemsData = cart.map(item => ({
         product_id: item.product_id,
-        quantity: item.quantity,
-        unit_price: item.products.price
+        quantity: item.quantity
       }));
 
-      const { error: itemsError } = await supabase
-        .from('order_items')
-        .insert(orderItems);
+      // Call the secure checkout function
+      const { data: orderId, error } = await supabase.rpc('process_checkout', {
+        cart_items_data: cartItemsData,
+        shipping_address_param: shippingAddress
+      });
 
-      if (itemsError) throw itemsError;
-
-      // Update product stock quantities
-      for (const item of cart) {
-        const { error: stockError } = await supabase
-          .from('products')
-          .update({ 
-            stock_quantity: item.products.stock_quantity - item.quantity 
-          })
-          .eq('id', item.product_id);
-
-        if (stockError) throw stockError;
+      if (error) {
+        console.error('Checkout error:', error);
+        
+        // Handle specific error cases
+        if (error.message.includes('Insufficient stock')) {
+          toast({
+            title: "Insufficient Stock",
+            description: "Some items in your cart are no longer available in the requested quantity.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Order Failed",
+            description: "There was an error processing your order. Please try again.",
+            variant: "destructive",
+          });
+        }
+        return;
       }
 
-      // Clear the cart
+      // Clear the cart on successful order
       clearCart();
 
       toast({
         title: "Order Placed Successfully!",
-        description: `Your order #${order.id.slice(0, 8)} has been placed. Thank you for your purchase!`,
+        description: `Your order #${orderId.toString().slice(0, 8)} has been placed. Thank you for your purchase!`,
       });
 
-      navigate('/');
+      navigate('/orders');
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
         title: "Order Failed",
-        description: "There was an error processing your order. Please try again.",
+        description: "There was an unexpected error processing your order. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -164,6 +155,11 @@ const Checkout = () => {
                     <p className="text-sm text-gray-600">
                       ${item.products.price} × {item.quantity}
                     </p>
+                    {item.products.stock_quantity < item.quantity && (
+                      <p className="text-xs text-red-600">
+                        Only {item.products.stock_quantity} available
+                      </p>
+                    )}
                   </div>
                   <div className="font-medium">
                     ${(item.products.price * item.quantity).toFixed(2)}
