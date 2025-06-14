@@ -1,5 +1,5 @@
 
-import { Search, User, Menu, LogOut } from 'lucide-react';
+import { Search, User, Menu, LogOut, ShoppingBag, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CartDropdown from './CartDropdown';
@@ -20,6 +21,9 @@ const Header = () => {
     await signOut();
     navigate('/');
   };
+
+  // Simple admin check - in a real app, you'd check user roles from database
+  const isAdmin = user?.email === 'admin@example.com';
 
   return (
     <header className="bg-gray-900 text-white">
@@ -38,7 +42,21 @@ const Header = () => {
                     Hello, {user.user_metadata?.full_name || user.email}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent>
+                <DropdownMenuContent className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/orders')}>
+                    <ShoppingBag className="h-4 w-4 mr-2" />
+                    My Orders
+                  </DropdownMenuItem>
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => navigate('/admin')}>
+                        <Settings className="h-4 w-4 mr-2" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut}>
                     <LogOut className="h-4 w-4 mr-2" />
                     Sign Out

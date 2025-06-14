@@ -1,112 +1,95 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
 import ProductCard from './ProductCard';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Search, Filter } from 'lucide-react';
+import ProductSearch from './ProductSearch';
+import { Product } from '@/hooks/useProducts';
 
 const ProductGrid = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<string>('name');
+  const { data: products, isLoading: productsLoading } = useProducts();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
 
-  const { data: products, isLoading } = useProducts();
-  const { data: categories } = useCategories();
+  const filteredAndSortedProducts = useMemo(() => {
+    if (!products) return [];
 
-  if (isLoading) {
+    let filtered = products;
+
+    // Apply search filter
+    if (searchQuery) {
+      filtered = filtered.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Apply category filter
+    if (selectedCategory) {
+      filtered = filtered.filter(product => product.category_id === selectedCategory);
+    }
+
+    // Apply sorting
+    const sorted = [...filtered].sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name);
+        case 'name-desc':
+          return b.name.localeCompare(a.name);
+        case 'price-asc':
+          return a.price - b.price;
+        case 'price-desc':
+          return b.price - a.price;
+        case 'newest':
+        default:
+          return new Date(b.created_at || '').getTime() - new Date(a.created_at || '').getTime();
+      }
+    });
+
+    return sorted;
+  }, [products, searchQuery, selectedCategory, sortBy]);
+
+  if (productsLoading || categoriesLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {[...Array(8)].map((_, i) => (
-          <div key={i} className="h-96 bg-gray-200 animate-pulse rounded-lg"></div>
-        ))}
+      <div className="text-center py-12">
+        <div className="text-lg">Loading products...</div>
       </div>
     );
   }
 
-  // Filter and sort products
-  const filteredProducts = products?.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || product.category_id === selectedCategory;
-    return matchesSearch && matchesCategory;
-  }) || [];
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    switch (sortBy) {
-      case 'price-low':
-        return a.price - b.price;
-      case 'price-high':
-        return b.price - a.price;
-      case 'name':
-        return a.name.localeCompare(b.name);
-      default:
-        return 0;
-    }
-  });
-
   return (
-    <div className="space-y-6">
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 items-center justify-between bg-white p-4 rounded-lg shadow-sm">
-        <div className="flex flex-1 gap-4 w-full md:w-auto">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-            <Input
-              placeholder="Search products..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48">
-              <Filter className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              {categories?.map(category => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <div>
+      <ProductSearch
+        onSearch={setSearchQuery}
+        onCategoryFilter={setSelectedCategory}
+        onSortChange={setSortBy}
+        categories={categories || []}
+        currentCategory={selectedCategory}
+        currentSort={sortBy}
+      />
 
-          <Select value={sortBy} onValueChange={setSortBy}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Sort by" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="name">Name</SelectItem>
-              <SelectItem value="price-low">Price: Low to High</SelectItem>
-              <SelectItem value="price-high">Price: High to Low</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Results count */}
-      <div className="text-gray-600">
-        Showing {sortedProducts.length} products
-      </div>
-
-      {/* Product Grid */}
-      {sortedProducts.length === 0 ? (
+      {filteredAndSortedProducts.length === 0 ? (
         <div className="text-center py-12">
-          <div className="text-gray-500 text-lg">No products found</div>
-          <p className="text-gray-400">Try adjusting your search or filter criteria</p>
+          <h3 className="text-xl font-semibold mb-2">No products found</h3>
+          <p className="text-gray-600">Try adjusting your search or filters.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {sortedProducts.map(product => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        <>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold">
+              {searchQuery ? `Search results for "${searchQuery}"` : 'Featured Products'}
+            </h2>
+            <p className="text-gray-600">{filteredAndSortedProducts.length} products found</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredAndSortedProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );
