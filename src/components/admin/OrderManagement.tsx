@@ -64,7 +64,8 @@ const OrderManagement = () => {
 
   const filteredOrders = orders?.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase());
+                         order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         order.user_id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -117,8 +118,8 @@ const OrderManagement = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Customer</p>
-                  <p>{order.profiles?.full_name || 'N/A'}</p>
-                  <p className="text-sm text-gray-500">{order.profiles?.email}</p>
+                  <p>{order.profiles?.full_name || 'Unknown Customer'}</p>
+                  <p className="text-sm text-gray-500">{order.profiles?.email || order.user_id.slice(0, 8)}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-600">Total Amount</p>

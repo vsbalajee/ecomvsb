@@ -23,6 +23,10 @@ export interface Order {
   created_at: string;
   updated_at: string;
   order_items: OrderItem[];
+  profiles?: {
+    full_name: string;
+    email: string;
+  };
 }
 
 export const useOrders = (userId?: string) => {

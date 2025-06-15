@@ -9,15 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Category } from '@/hooks/useCategories';
+import { useCategories } from '@/hooks/useCategories';
 import { useQueryClient } from '@tanstack/react-query';
 import AdminProtectedComponent from './AdminProtectedComponent';
 import ImageUpload from './ImageUpload';
-
-interface ProductFormProps {
-  categories: Category[];
-  onClose: () => void;
-}
 
 interface ProductFormData {
   name: string;
@@ -29,10 +24,12 @@ interface ProductFormData {
   stock_quantity: number;
 }
 
-const ProductForm = ({ categories, onClose }: ProductFormProps) => {
+const ProductForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { data: categories = [] } = useCategories();
   
   const form = useForm<ProductFormData>({
     defaultValues: {
@@ -128,7 +125,8 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
 
       // Refresh products list
       queryClient.invalidateQueries({ queryKey: ['products'] });
-      onClose();
+      setShowDialog(false);
+      form.reset();
     } catch (error) {
       console.error('Unexpected error adding product:', error);
       toast({
@@ -143,191 +141,199 @@ const ProductForm = ({ categories, onClose }: ProductFormProps) => {
 
   return (
     <AdminProtectedComponent fallback={null}>
-      <Dialog open={true} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Add New Product</DialogTitle>
-            <DialogDescription>
-              Add a new product to your catalog. Fill in all the required fields.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="name"
-                rules={{ 
-                  required: 'Product name is required',
-                  minLength: { value: 2, message: 'Name must be at least 2 characters' },
-                  maxLength: { value: 100, message: 'Name must be less than 100 characters' }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter product name" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      <div className="space-y-4">
+        <Button onClick={() => setShowDialog(true)} className="bg-orange-500 hover:bg-orange-600">
+          Add New Product
+        </Button>
 
-              <FormField
-                control={form.control}
-                name="description"
-                rules={{
-                  maxLength: { value: 500, message: 'Description must be less than 500 characters' }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Enter product description" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+        {showDialog && (
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
+            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add New Product</DialogTitle>
+                <DialogDescription>
+                  Add a new product to your catalog. Fill in all the required fields.
+                </DialogDescription>
+              </DialogHeader>
+              
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    rules={{ 
+                      required: 'Product name is required',
+                      minLength: { value: 2, message: 'Name must be at least 2 characters' },
+                      maxLength: { value: 100, message: 'Name must be less than 100 characters' }
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Name</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Enter product name" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="price"
-                  rules={{ 
-                    required: 'Price is required', 
-                    min: { value: 0.01, message: 'Price must be greater than 0' },
-                    max: { value: 99999.99, message: 'Price must be less than $100,000' }
-                  }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Price ($)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          step="0.01" 
-                          min="0.01"
-                          max="99999.99"
-                          placeholder="0.00" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    rules={{
+                      maxLength: { value: 500, message: 'Description must be less than 500 characters' }
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Enter product description" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="stock_quantity"
-                  rules={{ 
-                    required: 'Stock quantity is required', 
-                    min: { value: 0, message: 'Stock cannot be negative' },
-                    max: { value: 999999, message: 'Stock must be less than 1,000,000' }
-                  }}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Stock Quantity</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          min="0"
-                          max="999999"
-                          placeholder="0" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="price"
+                      rules={{ 
+                        required: 'Price is required', 
+                        min: { value: 0.01, message: 'Price must be greater than 0' },
+                        max: { value: 99999.99, message: 'Price must be less than $100,000' }
+                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Price ($)</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              step="0.01" 
+                              min="0.01"
+                              max="99999.99"
+                              placeholder="0.00" 
+                              {...field} 
+                              onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-              <FormField
-                control={form.control}
-                name="category_id"
-                rules={{ required: 'Category is required' }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Category</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a category" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
-                            {category.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    <FormField
+                      control={form.control}
+                      name="stock_quantity"
+                      rules={{ 
+                        required: 'Stock quantity is required', 
+                        min: { value: 0, message: 'Stock cannot be negative' },
+                        max: { value: 999999, message: 'Stock must be less than 1,000,000' }
+                      }}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Stock Quantity</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="number" 
+                              min="0"
+                              max="999999"
+                              placeholder="0" 
+                              {...field} 
+                              onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-              <FormField
-                control={form.control}
-                name="sku"
-                rules={{ 
-                  required: 'SKU is required',
-                  pattern: {
-                    value: /^[A-Z0-9-_]+$/,
-                    message: 'SKU can only contain uppercase letters, numbers, hyphens, and underscores'
-                  },
-                  minLength: { value: 3, message: 'SKU must be at least 3 characters' },
-                  maxLength: { value: 20, message: 'SKU must be less than 20 characters' }
-                }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>SKU</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter product SKU (e.g., PROD-001)" 
-                        {...field}
-                        onChange={(e) => field.onChange(e.target.value.toUpperCase())}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="category_id"
+                    rules={{ required: 'Category is required' }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {categories.map((category) => (
+                              <SelectItem key={category.id} value={category.id}>
+                                {category.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="image_url"
-                rules={{ required: 'Image is required' }}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Product Image</FormLabel>
-                    <FormControl>
-                      <ImageUpload
-                        onImageSelect={field.onChange}
-                        currentImage={field.value}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                  <FormField
+                    control={form.control}
+                    name="sku"
+                    rules={{ 
+                      required: 'SKU is required',
+                      pattern: {
+                        value: /^[A-Z0-9-_]+$/,
+                        message: 'SKU can only contain uppercase letters, numbers, hyphens, and underscores'
+                      },
+                      minLength: { value: 3, message: 'SKU must be at least 3 characters' },
+                      maxLength: { value: 20, message: 'SKU must be less than 20 characters' }
+                    }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>SKU</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Enter product SKU (e.g., PROD-001)" 
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button type="button" variant="outline" onClick={onClose}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSubmitting} className="bg-orange-500 hover:bg-orange-600">
-                  {isSubmitting ? 'Adding...' : 'Add Product'}
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+                  <FormField
+                    control={form.control}
+                    name="image_url"
+                    rules={{ required: 'Image is required' }}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Product Image</FormLabel>
+                        <FormControl>
+                          <ImageUpload
+                            onImageSelect={field.onChange}
+                            currentImage={field.value}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isSubmitting} className="bg-orange-500 hover:bg-orange-600">
+                      {isSubmitting ? 'Adding...' : 'Add Product'}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
     </AdminProtectedComponent>
   );
 };
