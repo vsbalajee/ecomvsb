@@ -70,7 +70,9 @@ const Header = () => {
                 </Button>
               </Link>
             )}
-            <span>Orders & Returns</span>
+            <Link to="/orders" className="hover:text-orange-400">
+              Orders & Returns
+            </Link>
           </div>
         </div>
       </div>
@@ -104,11 +106,13 @@ const Header = () => {
 
           {/* Right section */}
           <div className="flex items-center space-x-6">
-            <Button variant="ghost" className="text-white hover:bg-gray-700">
-              <span className="text-xs">Returns</span>
-              <br />
-              <span className="text-sm font-bold">& Orders</span>
-            </Button>
+            <Link to="/orders">
+              <Button variant="ghost" className="text-white hover:bg-gray-700">
+                <span className="text-xs">Returns</span>
+                <br />
+                <span className="text-sm font-bold">& Orders</span>
+              </Button>
+            </Link>
             
             <CartDropdown />
           </div>
@@ -123,11 +127,11 @@ const Header = () => {
             All
           </Button>
           <nav className="hidden md:flex space-x-6">
-            <a href="#" className="hover:text-orange-400">Today's Deals</a>
-            <a href="#" className="hover:text-orange-400">Customer Service</a>
-            <a href="#" className="hover:text-orange-400">Registry</a>
-            <a href="#" className="hover:text-orange-400">Gift Cards</a>
-            <a href="#" className="hover:text-orange-400">Sell</a>
+            <Link to="/todays-deals" className="hover:text-orange-400">Today's Deals</Link>
+            <Link to="/customer-service" className="hover:text-orange-400">Customer Service</Link>
+            <Link to="/registry" className="hover:text-orange-400">Registry</Link>
+            <Link to="/gift-cards" className="hover:text-orange-400">Gift Cards</Link>
+            <Link to="/sell" className="hover:text-orange-400">Sell</Link>
           </nav>
         </div>
       </div>

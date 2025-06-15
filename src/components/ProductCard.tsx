@@ -14,6 +14,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart, isAddingToCart } = useCart();
 
   const handleAddToCart = () => {
+    console.log('Adding to cart:', product.id, product.name);
     addToCart({ productId: product.id });
   };
 

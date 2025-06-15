@@ -53,7 +53,7 @@ const CartDropdown = () => {
                   />
                   <div className="flex-1 min-w-0">
                     <h4 className="text-sm font-medium truncate">{item.products.name}</h4>
-                    <p className="text-sm text-gray-600">${item.products.price}</p>
+                    <p className="text-sm text-gray-600">₹{item.products.price}</p>
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -91,7 +91,7 @@ const CartDropdown = () => {
         {cart.length > 0 && (
           <div className="p-4 space-y-3">
             <div className="flex justify-between font-semibold">
-              <span>Total: ${cartTotal.toFixed(2)}</span>
+              <span>Total: ₹{cartTotal.toFixed(2)}</span>
             </div>
             <Button 
               onClick={handleCheckout}
