@@ -28,7 +28,7 @@ export const useProducts = () => {
         .from('products')
         .select(`
           *,
-          categories!inner (
+          categories (
             name
           )
         `)
@@ -39,7 +39,9 @@ export const useProducts = () => {
         console.error('Error fetching products:', error);
         throw new Error('Failed to load products. Please try again.');
       }
-      return data as Product[];
+      
+      // Type assertion to handle the Supabase response
+      return (data || []) as Product[];
     },
   });
 };
@@ -54,7 +56,7 @@ export const useProductsByCategory = (categoryId?: string) => {
         .from('products')
         .select(`
           *,
-          categories!inner (
+          categories (
             name
           )
         `)
@@ -66,7 +68,9 @@ export const useProductsByCategory = (categoryId?: string) => {
         console.error('Error fetching products by category:', error);
         throw new Error('Failed to load products. Please try again.');
       }
-      return data as Product[];
+      
+      // Type assertion to handle the Supabase response
+      return (data || []) as Product[];
     },
     enabled: !!categoryId,
   });
