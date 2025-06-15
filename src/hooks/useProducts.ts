@@ -14,12 +14,7 @@ export interface Product {
   stock_quantity: number;
   is_active: boolean;
   created_at: string;
-  categories?: {
-    name: string;
-  };
-  suppliers?: {
-    name: string;
-  };
+  updated_at?: string;
 }
 
 export const useProducts = () => {

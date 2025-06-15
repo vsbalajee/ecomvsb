@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,10 +39,8 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
 
   const scanImageForSecurity = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
-      // Basic security checks - use HTMLImageElement constructor explicitly
       const img = document.createElement('img');
       img.onload = () => {
-        // Check for reasonable image dimensions (prevent memory exhaustion)
         if (img.width > 5000 || img.height > 5000) {
           toast({
             title: "Image Too Large",
@@ -52,7 +51,6 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
           return;
         }
         
-        // Basic aspect ratio check (prevent extremely skewed images)
         const aspectRatio = img.width / img.height;
         if (aspectRatio > 10 || aspectRatio < 0.1) {
           toast({
@@ -91,7 +89,6 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
 
     setUploading(true);
 
-    // Perform security scan
     const isSecure = await scanImageForSecurity(file);
     if (!isSecure) {
       setUploading(false);
@@ -99,14 +96,10 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
       return;
     }
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
       setPreview(result);
-      
-      // For now, we'll use the data URL directly
-      // In a production app, you'd upload to a secure storage service
       onImageSelect(result);
       setUploading(false);
       
@@ -130,14 +123,12 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
   }, [onImageSelect, toast]);
 
   const handleUrlInput = (url: string) => {
-    // Enhanced URL validation
     try {
       const urlObj = new URL(url);
       if (!['http:', 'https:'].includes(urlObj.protocol)) {
         throw new Error('Invalid protocol');
       }
       
-      // Check for HTTPS in production
       if (urlObj.protocol === 'http:' && window.location.protocol === 'https:') {
         toast({
           title: "Insecure URL",
@@ -156,7 +147,6 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
         return;
       }
 
-      // Check for suspicious domains or patterns
       const suspiciousPatterns = [
         /localhost/i,
         /127\.0\.0\.1/,
