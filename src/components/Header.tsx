@@ -11,18 +11,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import CartDropdown from './CartDropdown';
 import { useIsAdmin } from '@/hooks/useUserRole';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const isAdmin = useIsAdmin();
+  const isMobile = useIsMobile();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
+  const MobileNav = () => (
+    <Sheet>
+      <SheetTrigger asChild>
+        <Button variant="ghost" className="text-white hover:bg-gray-700 md:hidden">
+          <Menu className="h-6 w-6" />
+        </Button>
+      </SheetTrigger>
+      <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-700">
+        <div className="flex flex-col space-y-4 mt-6">
+          <Link to="/todays-deals" className="text-lg hover:text-orange-400 py-2">Today's Deals</Link>
+          <Link to="/customer-service" className="text-lg hover:text-orange-400 py-2">Customer Service</Link>
+          <Link to="/registry" className="text-lg hover:text-orange-400 py-2">Registry</Link>
+          <Link to="/gift-cards" className="text-lg hover:text-orange-400 py-2">Gift Cards</Link>
+          <Link to="/sell" className="text-lg hover:text-orange-400 py-2">Sell</Link>
+          <Link to="/orders" className="text-lg hover:text-orange-400 py-2">Orders & Returns</Link>
+        </div>
+      </SheetContent>
+    </Sheet>
+  );
 
   return (
     <header className="bg-gray-900 text-white">
@@ -30,18 +57,22 @@ const Header = () => {
       <div className="bg-gray-800 text-sm py-2">
         <div className="max-w-7xl mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center space-x-4">
-            <span>Deliver to Your Location</span>
+            <span className="hidden sm:block">Deliver to Your Location</span>
+            <span className="sm:hidden">Deliver</span>
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-white hover:bg-gray-700">
-                    <User className="h-4 w-4 mr-2" />
-                    Hello, {user.user_metadata?.full_name || user.email}
+                  <Button variant="ghost" className="text-white hover:bg-gray-700 text-xs sm:text-sm">
+                    <User className="h-4 w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Hello, </span>
+                    <span className="truncate max-w-20 sm:max-w-none">
+                      {user.user_metadata?.full_name || user.email}
+                    </span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48">
+                <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem onClick={() => navigate('/orders')}>
                     <ShoppingBag className="h-4 w-4 mr-2" />
                     My Orders
@@ -64,13 +95,13 @@ const Header = () => {
               </DropdownMenu>
             ) : (
               <Link to="/auth">
-                <Button variant="ghost" className="text-white hover:bg-gray-700">
-                  <User className="h-4 w-4 mr-2" />
+                <Button variant="ghost" className="text-white hover:bg-gray-700 text-xs sm:text-sm">
+                  <User className="h-4 w-4 mr-1 sm:mr-2" />
                   Sign In
                 </Button>
               </Link>
             )}
-            <Link to="/orders" className="hover:text-orange-400">
+            <Link to="/orders" className="hover:text-orange-400 text-xs sm:text-sm hidden sm:block">
               Orders & Returns
             </Link>
           </div>
@@ -78,39 +109,41 @@ const Header = () => {
       </div>
 
       {/* Main header */}
-      <div className="py-4">
+      <div className="py-2 sm:py-4">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between">
-          {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <h1 className="text-2xl font-bold text-orange-400">amazon</h1>
-          </Link>
+          {/* Mobile menu and Logo */}
+          <div className="flex items-center space-x-2">
+            <MobileNav />
+            <Link to="/" className="flex items-center">
+              <h1 className="text-xl sm:text-2xl font-bold text-orange-400">amazon</h1>
+            </Link>
+          </div>
 
           {/* Search bar */}
-          <div className="flex-1 max-w-2xl mx-8">
+          <div className="flex-1 max-w-xl mx-2 sm:mx-8">
             <div className="flex">
-              <select className="bg-gray-300 text-black px-3 py-2 rounded-l-md border-r">
+              <select className="bg-gray-300 text-black px-2 sm:px-3 py-2 rounded-l-md border-r text-xs sm:text-sm">
                 <option>All</option>
                 <option>Electronics</option>
                 <option>Books</option>
                 <option>Clothing</option>
               </select>
               <Input 
-                className="flex-1 rounded-none border-0" 
+                className="flex-1 rounded-none border-0 text-xs sm:text-sm" 
                 placeholder="Search Amazon"
               />
-              <Button className="bg-orange-400 hover:bg-orange-500 rounded-l-none px-4">
-                <Search className="h-5 w-5" />
+              <Button className="bg-orange-400 hover:bg-orange-500 rounded-l-none px-2 sm:px-4">
+                <Search className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
           </div>
 
           {/* Right section */}
-          <div className="flex items-center space-x-6">
-            <Link to="/orders">
-              <Button variant="ghost" className="text-white hover:bg-gray-700">
-                <span className="text-xs">Returns</span>
-                <br />
-                <span className="text-sm font-bold">& Orders</span>
+          <div className="flex items-center space-x-2 sm:space-x-6">
+            <Link to="/orders" className="hidden md:block">
+              <Button variant="ghost" className="text-white hover:bg-gray-700 text-xs">
+                <span className="block text-xs">Returns</span>
+                <span className="block text-sm font-bold">& Orders</span>
               </Button>
             </Link>
             
@@ -119,14 +152,14 @@ const Header = () => {
         </div>
       </div>
 
-      {/* Navigation */}
-      <div className="bg-gray-700 py-2">
+      {/* Navigation - Desktop only */}
+      <div className="bg-gray-700 py-2 hidden md:block">
         <div className="max-w-7xl mx-auto px-4 flex items-center space-x-6">
           <Button variant="ghost" className="text-white hover:bg-gray-600">
             <Menu className="h-4 w-4 mr-2" />
             All
           </Button>
-          <nav className="hidden md:flex space-x-6">
+          <nav className="flex space-x-6">
             <Link to="/todays-deals" className="hover:text-orange-400">Today's Deals</Link>
             <Link to="/customer-service" className="hover:text-orange-400">Customer Service</Link>
             <Link to="/registry" className="hover:text-orange-400">Registry</Link>

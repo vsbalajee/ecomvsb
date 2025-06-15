@@ -57,13 +57,14 @@ const ProductGrid = () => {
   if (productsLoading || categoriesLoading) {
     return (
       <div className="text-center py-12">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
         <div className="text-lg">Loading products...</div>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="px-2 sm:px-0">
       <ProductSearch
         onSearch={setSearchQuery}
         onCategoryFilter={setSelectedCategory}
@@ -75,22 +76,24 @@ const ProductGrid = () => {
 
       {filteredAndSortedProducts.length === 0 ? (
         <div className="text-center py-12">
-          <h3 className="text-xl font-semibold mb-2">No products found</h3>
-          <p className="text-gray-600">Try adjusting your search or filters.</p>
+          <h3 className="text-lg sm:text-xl font-semibold mb-2">No products found</h3>
+          <p className="text-gray-600 text-sm sm:text-base">Try adjusting your search or filters.</p>
         </div>
       ) : (
         <>
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-2 sm:space-y-0">
+            <h2 className="text-lg sm:text-2xl font-bold">
               {searchQuery ? `Search results for "${searchQuery}"` : 
                selectedCategory !== 'all' && categories ? 
                `${categories.find(c => c.id === selectedCategory)?.name || 'Products'}` : 
                'Featured Products'}
             </h2>
-            <p className="text-gray-600">{filteredAndSortedProducts.length} products found</p>
+            <p className="text-gray-600 text-sm sm:text-base">
+              {filteredAndSortedProducts.length} product{filteredAndSortedProducts.length !== 1 ? 's' : ''} found
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             {filteredAndSortedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
