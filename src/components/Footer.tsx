@@ -5,7 +5,10 @@ const Footer = () => {
   return (
     <footer className="bg-gray-900 text-white mt-12">
       {/* Back to top */}
-      <div className="bg-gray-700 py-4 text-center cursor-pointer hover:bg-gray-600">
+      <div 
+        className="bg-gray-700 py-4 text-center cursor-pointer hover:bg-gray-600"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      >
         <span className="text-sm">Back to top</span>
       </div>
 
@@ -17,12 +20,12 @@ const Footer = () => {
             <div>
               <h3 className="font-bold text-white mb-4">Get to Know Us</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/sell" className="text-gray-300 hover:underline">Careers</Link></li>
-                <li><Link to="/" className="text-gray-300 hover:underline">Blog</Link></li>
-                <li><Link to="/" className="text-gray-300 hover:underline">About Amazon</Link></li>
+                <li><Link to="/careers" className="text-gray-300 hover:underline">Careers</Link></li>
+                <li><Link to="/blog" className="text-gray-300 hover:underline">Blog</Link></li>
+                <li><Link to="/about" className="text-gray-300 hover:underline">About Amazon</Link></li>
                 <li><Link to="/sell" className="text-gray-300 hover:underline">Investor Relations</Link></li>
                 <li><Link to="/" className="text-gray-300 hover:underline">Amazon Devices</Link></li>
-                <li><Link to="/" className="text-gray-300 hover:underline">Amazon Science</Link></li>
+                <li><Link to="/blog" className="text-gray-300 hover:underline">Amazon Science</Link></li>
               </ul>
             </div>
 
@@ -111,7 +114,7 @@ const Footer = () => {
               </Link>
             </div>
             <div>
-              <Link to="/" className="block">
+              <Link to="/blog" className="block">
                 <p className="font-bold mb-2">AbeBooks</p>
                 <p className="text-gray-400">Books, art & collectibles</p>
               </Link>

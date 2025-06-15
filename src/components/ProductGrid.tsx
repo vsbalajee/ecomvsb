@@ -1,7 +1,7 @@
-
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
+import { useSearchParams } from 'react-router-dom';
 import ProductCard from './ProductCard';
 import ProductSearch from './ProductSearch';
 import { Product } from '@/hooks/useProducts';
@@ -9,9 +9,26 @@ import { Product } from '@/hooks/useProducts';
 const ProductGrid = () => {
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+
+  useEffect(() => {
+    const urlSearch = searchParams.get('search');
+    if (urlSearch) {
+      setSearchQuery(urlSearch);
+    }
+  }, [searchParams]);
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    if (query) {
+      setSearchParams({ search: query });
+    } else {
+      setSearchParams({});
+    }
+  };
 
   const filteredAndSortedProducts = useMemo(() => {
     if (!products) return [];
@@ -66,7 +83,7 @@ const ProductGrid = () => {
   return (
     <div className="px-2 sm:px-0">
       <ProductSearch
-        onSearch={setSearchQuery}
+        onSearch={handleSearch}
         onCategoryFilter={setSelectedCategory}
         onSortChange={setSortBy}
         categories={categories || []}

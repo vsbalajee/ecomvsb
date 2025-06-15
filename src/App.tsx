@@ -15,6 +15,9 @@ import CustomerService from "./pages/CustomerService";
 import Registry from "./pages/Registry";
 import GiftCards from "./pages/GiftCards";
 import Sell from "./pages/Sell";
+import About from "./pages/About";
+import Careers from "./pages/Careers";
+import Blog from "./pages/Blog";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +40,9 @@ const App = () => (
             <Route path="/registry" element={<Registry />} />
             <Route path="/gift-cards" element={<GiftCards />} />
             <Route path="/sell" element={<Sell />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/blog" element={<Blog />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

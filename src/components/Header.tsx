@@ -1,9 +1,9 @@
-
 import { Search, User, Menu, LogOut, ShoppingBag, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,10 +25,23 @@ const Header = () => {
   const navigate = useNavigate();
   const isAdmin = useIsAdmin();
   const isMobile = useIsMobile();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/?search=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const MobileNav = () => (
@@ -129,10 +142,16 @@ const Header = () => {
                 <option>Clothing</option>
               </select>
               <Input 
-                className="flex-1 rounded-none border-0 text-xs sm:text-sm" 
+                className="flex-1 rounded-none border-0 text-xs sm:text-sm text-black" 
                 placeholder="Search Amazon"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
               />
-              <Button className="bg-orange-400 hover:bg-orange-500 rounded-l-none px-2 sm:px-4">
+              <Button 
+                className="bg-orange-400 hover:bg-orange-500 rounded-l-none px-2 sm:px-4"
+                onClick={handleSearch}
+              >
                 <Search className="h-4 w-4 sm:h-5 sm:w-5" />
               </Button>
             </div>
