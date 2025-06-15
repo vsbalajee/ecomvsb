@@ -110,7 +110,7 @@ const SearchDropdown = ({ onSearch, className }: SearchDropdownProps) => {
                   <div className="text-xs text-gray-500 truncate">{product.description}</div>
                 </div>
                 <div className="text-sm font-semibold text-orange-600">
-                  ${product.price.toFixed(2)}
+                  ₹{product.price.toFixed(2)}
                 </div>
               </div>
             </div>
