@@ -10,7 +10,7 @@ const ProductGrid = () => {
   const { data: products, isLoading: productsLoading } = useProducts();
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
 
   const filteredAndSortedProducts = useMemo(() => {
@@ -27,7 +27,7 @@ const ProductGrid = () => {
     }
 
     // Apply category filter
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory !== 'all') {
       filtered = filtered.filter(product => product.category_id === selectedCategory);
     }
 
@@ -82,7 +82,10 @@ const ProductGrid = () => {
         <>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">
-              {searchQuery ? `Search results for "${searchQuery}"` : 'Featured Products'}
+              {searchQuery ? `Search results for "${searchQuery}"` : 
+               selectedCategory !== 'all' && categories ? 
+               `${categories.find(c => c.id === selectedCategory)?.name || 'Products'}` : 
+               'Featured Products'}
             </h2>
             <p className="text-gray-600">{filteredAndSortedProducts.length} products found</p>
           </div>
