@@ -209,7 +209,7 @@ const Auth = () => {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-orange-600">Krish's Amazon</CardTitle>
+          <CardTitle className="text-2xl font-bold text-orange-600">ecom</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
           {rateLimit.isLocked && (
             <div className="flex items-center justify-center text-red-600 text-sm mt-2">
