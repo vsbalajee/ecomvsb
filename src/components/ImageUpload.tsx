@@ -38,8 +38,8 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
 
   const scanImageForSecurity = (file: File): Promise<boolean> => {
     return new Promise((resolve) => {
-      // Basic security checks
-      const img = new Image(); // Fixed: Added parentheses
+      // Basic security checks - use HTMLImageElement constructor explicitly
+      const img = document.createElement('img');
       img.onload = () => {
         // Check for reasonable image dimensions (prevent memory exhaustion)
         if (img.width > 5000 || img.height > 5000) {
