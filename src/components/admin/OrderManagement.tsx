@@ -64,7 +64,7 @@ const OrderManagement = () => {
 
   const filteredOrders = orders?.filter(order => {
     const matchesSearch = order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.profiles?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (order.profiles?.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.user_id.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || order.status === statusFilter;
     return matchesSearch && matchesStatus;

@@ -26,7 +26,7 @@ export interface Order {
   profiles?: {
     full_name: string;
     email: string;
-  };
+  } | null;
 }
 
 export const useOrders = (userId?: string) => {
@@ -65,13 +65,29 @@ export const useAllOrders = () => {
           order_items!fk_order_items_order(
             *,
             products!fk_order_items_product(name, image_url)
-          ),
-          profiles(full_name, email)
+          )
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
+      
+      // Get user profiles separately to avoid relation issues
+      const ordersWithProfiles = await Promise.all(
+        (data || []).map(async (order) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name, email')
+            .eq('id', order.user_id)
+            .single();
+          
+          return {
+            ...order,
+            profiles: profile
+          };
+        })
+      );
+      
+      return ordersWithProfiles;
     },
   });
 };

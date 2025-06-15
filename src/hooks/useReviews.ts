@@ -14,7 +14,7 @@ export interface Review {
   updated_at: string;
   profiles?: {
     full_name: string;
-  };
+  } | null;
 }
 
 export const useReviews = (productId?: string) => {
@@ -23,10 +23,7 @@ export const useReviews = (productId?: string) => {
     queryFn: async () => {
       let query = supabase
         .from('reviews')
-        .select(`
-          *,
-          profiles!inner(full_name)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
       
       if (productId) {
@@ -35,7 +32,24 @@ export const useReviews = (productId?: string) => {
       
       const { data, error } = await query;
       if (error) throw error;
-      return data as Review[];
+      
+      // Get user profiles separately to avoid relation issues
+      const reviewsWithProfiles = await Promise.all(
+        (data || []).map(async (review) => {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', review.user_id)
+            .single();
+          
+          return {
+            ...review,
+            profiles: profile
+          };
+        })
+      );
+      
+      return reviewsWithProfiles as Review[];
     },
   });
 };
