@@ -8,7 +8,7 @@ const HeroBanner = () => {
       {/* Main hero image */}
       <div className="relative h-96 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
         <img 
-          src="/api/placeholder/1200/400" 
+          src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=400&fit=crop" 
           alt="Hero Banner" 
           className="w-full h-full object-cover"
         />

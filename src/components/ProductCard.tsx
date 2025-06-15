@@ -41,7 +41,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg line-clamp-2">{product.name}</CardTitle>
           <div className="text-right">
-            <div className="text-2xl font-bold text-orange-600">${product.price}</div>
+            <div className="text-2xl font-bold text-orange-600">₹{product.price}</div>
             {product.categories && (
               <Badge variant="outline" className="text-xs">
                 {product.categories.name}
