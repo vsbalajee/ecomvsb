@@ -1,9 +1,12 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ShoppingCart, Package } from 'lucide-react';
+import { ShoppingCart, Package, Star } from 'lucide-react';
 import { Product } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
+import { useReviews } from '@/hooks/useReviews';
+import { useNavigate } from 'react-router-dom';
 
 interface ProductCardProps {
   product: Product;
@@ -11,14 +14,46 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { addToCart, isAddingToCart } = useCart();
+  const { data: reviews } = useReviews(product.id);
+  const navigate = useNavigate();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
     console.log('Adding to cart:', product.id, product.name);
     addToCart({ productId: product.id });
   };
 
+  const handleCardClick = () => {
+    navigate(`/product/${product.id}`);
+  };
+
+  const averageRating = reviews?.length 
+    ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length 
+    : 0;
+
+  const renderStars = (rating: number) => {
+    return (
+      <div className="flex items-center space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`h-3 w-3 ${
+              star <= rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+            }`}
+          />
+        ))}
+        <span className="text-xs text-gray-600 ml-1">
+          ({reviews?.length || 0})
+        </span>
+      </div>
+    );
+  };
+
   return (
-    <Card className="h-full flex flex-col hover:shadow-lg transition-shadow">
+    <Card 
+      className="h-full flex flex-col hover:shadow-lg transition-shadow cursor-pointer"
+      onClick={handleCardClick}
+    >
       <div className="relative">
         <img 
           src={product.image_url} 
@@ -59,6 +94,12 @@ const ProductCard = ({ product }: ProductCardProps) => {
               </div>
             </div>
           </div>
+          {/* Reviews */}
+          {reviews && reviews.length > 0 && (
+            <div className="mt-1">
+              {renderStars(Math.round(averageRating))}
+            </div>
+          )}
         </div>
         <CardDescription className="line-clamp-2 sm:line-clamp-3 text-xs sm:text-sm">
           {product.description}
