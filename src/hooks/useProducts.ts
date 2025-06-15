@@ -40,8 +40,13 @@ export const useProducts = () => {
         throw new Error('Failed to load products. Please try again.');
       }
       
-      // Type assertion to handle the Supabase response
-      return (data || []) as Product[];
+      // Transform the data to ensure proper typing
+      const products = (data || []).map((product: any) => ({
+        ...product,
+        categories: product.categories || null
+      }));
+      
+      return products as Product[];
     },
   });
 };
@@ -69,8 +74,13 @@ export const useProductsByCategory = (categoryId?: string) => {
         throw new Error('Failed to load products. Please try again.');
       }
       
-      // Type assertion to handle the Supabase response
-      return (data || []) as Product[];
+      // Transform the data to ensure proper typing
+      const products = (data || []).map((product: any) => ({
+        ...product,
+        categories: product.categories || null
+      }));
+      
+      return products as Product[];
     },
     enabled: !!categoryId,
   });
