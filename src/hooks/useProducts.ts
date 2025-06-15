@@ -15,6 +15,9 @@ export interface Product {
   is_active: boolean;
   created_at: string;
   updated_at?: string;
+  categories?: {
+    name: string;
+  };
 }
 
 export const useProducts = () => {
@@ -23,7 +26,12 @@ export const useProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          categories (
+            name
+          )
+        `)
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -44,7 +52,12 @@ export const useProductsByCategory = (categoryId?: string) => {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          categories (
+            name
+          )
+        `)
         .eq('is_active', true)
         .eq('category_id', categoryId)
         .order('created_at', { ascending: false });
