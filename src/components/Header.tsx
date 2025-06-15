@@ -114,7 +114,7 @@ const Header = () => {
           <div className="flex items-center space-x-2">
             <MobileNav />
             <Link to="/" className="flex items-center">
-              <h1 className="text-xl sm:text-2xl font-bold text-orange-400">amazon</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-orange-400">ecom</h1>
             </Link>
           </div>
 

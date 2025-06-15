@@ -98,14 +98,14 @@ const Registry = () => {
         {/* How it works */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-2xl">How Amazon Registry Works</CardTitle>
+            <CardTitle className="text-2xl">How ECOM Registry Works</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center">
                 <div className="bg-orange-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">1</div>
                 <h3 className="font-semibold mb-2">Create Your Registry</h3>
-                <p className="text-gray-600">Add items from millions of products on Amazon</p>
+                <p className="text-gray-600">Add items from millions of products on ECOM</p>
               </div>
               <div className="text-center">
                 <div className="bg-orange-500 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">2</div>

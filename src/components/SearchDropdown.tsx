@@ -73,7 +73,7 @@ const SearchDropdown = ({ onSearch, className }: SearchDropdownProps) => {
         </select>
         <Input 
           className="flex-1 rounded-none border-0 text-xs sm:text-sm text-black" 
-          placeholder="Search Amazon"
+          placeholder="Search ECOM"
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);

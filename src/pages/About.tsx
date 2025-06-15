@@ -12,7 +12,7 @@ const About = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">About Amazon</h1>
+          <h1 className="text-4xl font-bold mb-4">About ECOM</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             We're guided by four principles: customer obsession rather than competitor focus, 
             passion for invention, commitment to operational excellence, and long-term thinking.
@@ -58,11 +58,11 @@ const About = () => {
           </CardHeader>
           <CardContent className="space-y-4">
             <p>
-              Amazon was founded in 1994 by Jeff Bezos as an online bookstore. What started as a 
+              ECOM was founded in 1994 as an online bookstore. What started as a 
               simple idea has grown into one of the world's largest e-commerce and cloud computing companies.
             </p>
             <p>
-              Today, Amazon serves hundreds of millions of customers worldwide with a vast selection 
+              Today, ECOM serves hundreds of millions of customers worldwide with a vast selection 
               of products, from books and electronics to groceries and beyond. We've revolutionized 
               how people shop, read, and compute in the cloud.
             </p>

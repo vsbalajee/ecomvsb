@@ -22,10 +22,10 @@ const Footer = () => {
               <ul className="space-y-2 text-sm">
                 <li><Link to="/careers" className="text-gray-300 hover:underline">Careers</Link></li>
                 <li><Link to="/blog" className="text-gray-300 hover:underline">Blog</Link></li>
-                <li><Link to="/about" className="text-gray-300 hover:underline">About Amazon</Link></li>
+                <li><Link to="/about" className="text-gray-300 hover:underline">About ECOM</Link></li>
                 <li><Link to="/sell" className="text-gray-300 hover:underline">Investor Relations</Link></li>
-                <li><Link to="/" className="text-gray-300 hover:underline">Amazon Devices</Link></li>
-                <li><Link to="/blog" className="text-gray-300 hover:underline">Amazon Science</Link></li>
+                <li><Link to="/" className="text-gray-300 hover:underline">ECOM Devices</Link></li>
+                <li><Link to="/blog" className="text-gray-300 hover:underline">ECOM Science</Link></li>
               </ul>
             </div>
 
@@ -33,24 +33,24 @@ const Footer = () => {
             <div>
               <h3 className="font-bold text-white mb-4">Make Money with Us</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/sell" className="text-gray-300 hover:underline">Sell products on Amazon</Link></li>
-                <li><Link to="/sell" className="text-gray-300 hover:underline">Sell on Amazon Business</Link></li>
-                <li><Link to="/sell" className="text-gray-300 hover:underline">Sell apps on Amazon</Link></li>
+                <li><Link to="/sell" className="text-gray-300 hover:underline">Sell products on ECOM</Link></li>
+                <li><Link to="/sell" className="text-gray-300 hover:underline">Sell on ECOM Business</Link></li>
+                <li><Link to="/sell" className="text-gray-300 hover:underline">Sell apps on ECOM</Link></li>
                 <li><Link to="/sell" className="text-gray-300 hover:underline">Become an Affiliate</Link></li>
                 <li><Link to="/sell" className="text-gray-300 hover:underline">Advertise Your Products</Link></li>
                 <li><Link to="/sell" className="text-gray-300 hover:underline">Self-Publish with Us</Link></li>
-                <li><Link to="/sell" className="text-gray-300 hover:underline">Host an Amazon Hub</Link></li>
+                <li><Link to="/sell" className="text-gray-300 hover:underline">Host an ECOM Hub</Link></li>
               </ul>
             </div>
 
-            {/* Amazon Payment Products */}
+            {/* ECOM Payment Products */}
             <div>
-              <h3 className="font-bold text-white mb-4">Amazon Payment Products</h3>
+              <h3 className="font-bold text-white mb-4">ECOM Payment Products</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/gift-cards" className="text-gray-300 hover:underline">Amazon Business Card</Link></li>
+                <li><Link to="/gift-cards" className="text-gray-300 hover:underline">ECOM Business Card</Link></li>
                 <li><Link to="/gift-cards" className="text-gray-300 hover:underline">Shop with Points</Link></li>
                 <li><Link to="/gift-cards" className="text-gray-300 hover:underline">Reload Your Balance</Link></li>
-                <li><Link to="/gift-cards" className="text-gray-300 hover:underline">Amazon Currency Converter</Link></li>
+                <li><Link to="/gift-cards" className="text-gray-300 hover:underline">ECOM Currency Converter</Link></li>
               </ul>
             </div>
 
@@ -58,13 +58,13 @@ const Footer = () => {
             <div>
               <h3 className="font-bold text-white mb-4">Let Us Help You</h3>
               <ul className="space-y-2 text-sm">
-                <li><Link to="/customer-service" className="text-gray-300 hover:underline">Amazon and COVID-19</Link></li>
+                <li><Link to="/customer-service" className="text-gray-300 hover:underline">ECOM and COVID-19</Link></li>
                 <li><Link to="/orders" className="text-gray-300 hover:underline">Your Account</Link></li>
                 <li><Link to="/orders" className="text-gray-300 hover:underline">Your Orders</Link></li>
                 <li><Link to="/customer-service" className="text-gray-300 hover:underline">Shipping Rates & Policies</Link></li>
                 <li><Link to="/customer-service" className="text-gray-300 hover:underline">Returns & Replacements</Link></li>
                 <li><Link to="/orders" className="text-gray-300 hover:underline">Manage Your Content and Devices</Link></li>
-                <li><Link to="/customer-service" className="text-gray-300 hover:underline">Amazon Assistant</Link></li>
+                <li><Link to="/customer-service" className="text-gray-300 hover:underline">ECOM Assistant</Link></li>
                 <li><Link to="/customer-service" className="text-gray-300 hover:underline">Help</Link></li>
               </ul>
             </div>
@@ -77,7 +77,7 @@ const Footer = () => {
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center space-x-4 mb-4 md:mb-0">
               <Link to="/">
-                <img src="/api/placeholder/120/40" alt="Amazon" className="h-8 w-auto" />
+                <img src="/api/placeholder/120/40" alt="ECOM" className="h-8 w-auto" />
               </Link>
               <div className="flex items-center space-x-4 text-sm">
                 <button className="border border-gray-600 px-3 py-1 rounded hover:bg-gray-800">
@@ -97,13 +97,13 @@ const Footer = () => {
           <div className="mt-8 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 text-xs">
             <div>
               <Link to="/todays-deals" className="block">
-                <p className="font-bold mb-2">Amazon Music</p>
+                <p className="font-bold mb-2">ECOM Music</p>
                 <p className="text-gray-400">Stream millions of songs</p>
               </Link>
             </div>
             <div>
               <Link to="/sell" className="block">
-                <p className="font-bold mb-2">Amazon Advertising</p>
+                <p className="font-bold mb-2">ECOM Advertising</p>
                 <p className="text-gray-400">Find, attract, and engage customers</p>
               </Link>
             </div>
@@ -127,13 +127,13 @@ const Footer = () => {
             </div>
             <div>
               <Link to="/sell" className="block">
-                <p className="font-bold mb-2">Sell on Amazon</p>
+                <p className="font-bold mb-2">Sell on ECOM</p>
                 <p className="text-gray-400">Start a Selling Account</p>
               </Link>
             </div>
             <div>
               <Link to="/sell" className="block">
-                <p className="font-bold mb-2">Amazon Business</p>
+                <p className="font-bold mb-2">ECOM Business</p>
                 <p className="text-gray-400">Everything For Your Business</p>
               </Link>
             </div>
@@ -146,7 +146,7 @@ const Footer = () => {
               <Link to="/customer-service" className="hover:underline">Privacy Notice</Link>
               <Link to="/customer-service" className="hover:underline">Your Ads Privacy Choices</Link>
             </div>
-            <p>© 1996-2024, Amazon.com, Inc. or its affiliates</p>
+            <p>© 1996-2024, ECOM.com, Inc. or its affiliates</p>
           </div>
         </div>
       </div>
