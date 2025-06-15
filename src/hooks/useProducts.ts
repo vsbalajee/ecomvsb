@@ -28,11 +28,7 @@ export const useProducts = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          categories!fk_products_category(name),
-          suppliers!fk_products_supplier(name)
-        `)
+        .select('*')
         .eq('is_active', true)
         .order('created_at', { ascending: false });
 
@@ -51,17 +47,12 @@ export const useProductsByCategory = (categoryId?: string) => {
     queryFn: async () => {
       if (!categoryId) return [];
       
-      let query = supabase
+      const { data, error } = await supabase
         .from('products')
-        .select(`
-          *,
-          categories!fk_products_category(name),
-          suppliers!fk_products_supplier(name)
-        `)
+        .select('*')
         .eq('is_active', true)
-        .eq('category_id', categoryId);
-
-      const { data, error } = await query.order('created_at', { ascending: false });
+        .eq('category_id', categoryId)
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching products by category:', error);
