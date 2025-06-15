@@ -17,7 +17,7 @@ export interface Product {
   updated_at?: string;
   categories?: {
     name: string;
-  };
+  } | null;
 }
 
 export const useProducts = () => {
@@ -28,7 +28,7 @@ export const useProducts = () => {
         .from('products')
         .select(`
           *,
-          categories (
+          categories!inner (
             name
           )
         `)
@@ -54,7 +54,7 @@ export const useProductsByCategory = (categoryId?: string) => {
         .from('products')
         .select(`
           *,
-          categories (
+          categories!inner (
             name
           )
         `)
