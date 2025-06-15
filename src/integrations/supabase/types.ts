@@ -53,24 +53,117 @@ export type Database = {
       }
       categories: {
         Row: {
-          created_at: string | null
+          color: string | null
+          created_at: string
           description: string | null
+          icon: string | null
           id: string
+          is_active: boolean
           name: string
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          color?: string | null
+          created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
+          is_active?: boolean
           name: string
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          color?: string | null
+          created_at?: string
           description?: string | null
+          icon?: string | null
           id?: string
+          is_active?: boolean
           name?: string
+          updated_at?: string
         }
         Relationships: []
+      }
+      expense_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number
+          category: string
+          category_id: string | null
+          created_at: string
+          date: string
+          expense_type_id: string | null
+          id: string
+          note: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          category: string
+          category_id?: string | null
+          created_at?: string
+          date: string
+          expense_type_id?: string | null
+          id?: string
+          note?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          category?: string
+          category_id?: string | null
+          created_at?: string
+          date?: string
+          expense_type_id?: string | null
+          id?: string
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "expenses_expense_type_id_fkey"
+            columns: ["expense_type_id"]
+            isOneToOne: false
+            referencedRelation: "expense_types"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       order_items: {
         Row: {
@@ -203,24 +296,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "fk_products_category"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "fk_products_supplier"
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "suppliers"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "products_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
           {

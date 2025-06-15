@@ -7,8 +7,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, Shield } from 'lucide-react';
 import PasswordStrengthIndicator from '@/components/PasswordStrengthIndicator';
+import { useRateLimit } from '@/hooks/useRateLimit';
+import { validateEmail, validatePassword, sanitizeInput } from '@/utils/security';
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);
@@ -27,21 +29,20 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePassword = (password: string): boolean => {
-    return password.length >= 8 && 
-           /[A-Z]/.test(password) && 
-           /[a-z]/.test(password) && 
-           /[\d\W]/.test(password);
-  };
+  const rateLimit = useRateLimit('auth');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (rateLimit.isLocked) {
+      const remainingTime = Math.ceil(rateLimit.getRemainingTime() / 1000 / 60);
+      toast({
+        title: "Account Temporarily Locked",
+        description: `Too many failed attempts. Try again in ${remainingTime} minutes.`,
+        variant: "destructive"
+      });
+      return;
+    }
     
     if (!validateEmail(loginData.email)) {
       toast({
@@ -67,11 +68,13 @@ const Auth = () => {
       const { error } = await signIn(loginData.email, loginData.password);
       
       if (error) {
+        rateLimit.recordAttempt(false);
+        
         // Enhanced error handling
         if (error.message.includes('Invalid login credentials')) {
           toast({
             title: "Login Failed",
-            description: "Invalid email or password. Please check your credentials and try again.",
+            description: `Invalid email or password. ${rateLimit.remainingAttempts} attempts remaining.`,
             variant: "destructive"
           });
         } else if (error.message.includes('Email not confirmed')) {
@@ -94,6 +97,7 @@ const Auth = () => {
           });
         }
       } else {
+        rateLimit.recordAttempt(true);
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in."
@@ -101,6 +105,7 @@ const Auth = () => {
         navigate('/');
       }
     } catch (error) {
+      rateLimit.recordAttempt(false);
       toast({
         title: "Network Error",
         description: "Please check your internet connection and try again.",
@@ -123,7 +128,8 @@ const Auth = () => {
       return;
     }
 
-    if (!signupData.fullName.trim()) {
+    const sanitizedName = sanitizeInput(signupData.fullName);
+    if (!sanitizedName.trim()) {
       toast({
         title: "Name Required",
         description: "Please enter your full name.",
@@ -135,7 +141,7 @@ const Auth = () => {
     if (!validatePassword(signupData.password)) {
       toast({
         title: "Password Too Weak",
-        description: "Password must be at least 8 characters with uppercase, lowercase, and number/special character.",
+        description: "Password must meet all security requirements shown below.",
         variant: "destructive"
       });
       return;
@@ -153,7 +159,7 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const { error } = await signUp(signupData.email, signupData.password, signupData.fullName);
+      const { error } = await signUp(signupData.email, signupData.password, sanitizedName);
       
       if (error) {
         if (error.message.includes('User already registered')) {
@@ -205,6 +211,12 @@ const Auth = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-orange-600">Krish's Amazon</CardTitle>
           <CardDescription>Sign in to your account or create a new one</CardDescription>
+          {rateLimit.isLocked && (
+            <div className="flex items-center justify-center text-red-600 text-sm mt-2">
+              <Shield className="h-4 w-4 mr-1" />
+              Account temporarily locked due to multiple failed attempts
+            </div>
+          )}
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="login" className="w-full">
@@ -223,6 +235,7 @@ const Auth = () => {
                     onChange={(e) => setLoginData({ ...loginData, email: e.target.value })} 
                     required 
                     autoComplete="email"
+                    disabled={rateLimit.isLocked}
                   />
                 </div>
                 <div className="relative">
@@ -233,6 +246,7 @@ const Auth = () => {
                     onChange={(e) => setLoginData({ ...loginData, password: e.target.value })} 
                     required 
                     autoComplete="current-password"
+                    disabled={rateLimit.isLocked}
                   />
                   <Button
                     type="button"
@@ -240,11 +254,21 @@ const Auth = () => {
                     size="sm"
                     className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                     onClick={() => setShowPassword(!showPassword)}
+                    disabled={rateLimit.isLocked}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </Button>
                 </div>
-                <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={loading}>
+                {!rateLimit.isLocked && rateLimit.remainingAttempts < 5 && (
+                  <div className="text-sm text-yellow-600">
+                    {rateLimit.remainingAttempts} attempts remaining before account lockout
+                  </div>
+                )}
+                <Button 
+                  type="submit" 
+                  className="w-full bg-orange-500 hover:bg-orange-600" 
+                  disabled={loading || rateLimit.isLocked}
+                >
                   {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                   Sign In
                 </Button>
@@ -261,6 +285,7 @@ const Auth = () => {
                     onChange={(e) => setSignupData({ ...signupData, fullName: e.target.value })} 
                     required 
                     autoComplete="name"
+                    maxLength={100}
                   />
                 </div>
                 <div>

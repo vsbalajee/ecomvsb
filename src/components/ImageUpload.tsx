@@ -3,7 +3,8 @@ import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Upload, X, Image } from 'lucide-react';
+import { Upload, X, Image, Shield } from 'lucide-react';
+import { isValidImageFile, SECURITY_CONFIG } from '@/utils/security';
 
 interface ImageUploadProps {
   onImageSelect: (url: string) => void;
@@ -17,32 +18,70 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
   const { toast } = useToast();
 
   const validateImageFile = (file: File): boolean => {
-    // Check file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(file.type)) {
-      toast({
-        title: "Invalid File Type",
-        description: "Please upload a JPEG, PNG, GIF, or WebP image.",
-        variant: "destructive",
-      });
+    if (!isValidImageFile(file)) {
+      if (!SECURITY_CONFIG.ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        toast({
+          title: "Invalid File Type",
+          description: "Please upload a JPEG, PNG, GIF, or WebP image.",
+          variant: "destructive",
+        });
+      } else if (file.size > SECURITY_CONFIG.MAX_FILE_SIZE) {
+        toast({
+          title: "File Too Large",
+          description: `Please upload an image smaller than ${SECURITY_CONFIG.MAX_FILE_SIZE / (1024 * 1024)}MB.`,
+          variant: "destructive",
+        });
+      }
       return false;
     }
-
-    // Check file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024;
-    if (file.size > maxSize) {
-      toast({
-        title: "File Too Large",
-        description: "Please upload an image smaller than 5MB.",
-        variant: "destructive",
-      });
-      return false;
-    }
-
     return true;
   };
 
-  const handleFileSelect = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const scanImageForSecurity = (file: File): Promise<boolean> => {
+    return new Promise((resolve) => {
+      // Basic security checks
+      const img = new Image();
+      img.onload = () => {
+        // Check for reasonable image dimensions (prevent memory exhaustion)
+        if (img.width > 5000 || img.height > 5000) {
+          toast({
+            title: "Image Too Large",
+            description: "Image dimensions are too large. Please use an image smaller than 5000x5000 pixels.",
+            variant: "destructive",
+          });
+          resolve(false);
+          return;
+        }
+        
+        // Basic aspect ratio check (prevent extremely skewed images)
+        const aspectRatio = img.width / img.height;
+        if (aspectRatio > 10 || aspectRatio < 0.1) {
+          toast({
+            title: "Invalid Image Dimensions",
+            description: "Image aspect ratio is too extreme. Please use a more standard image format.",
+            variant: "destructive",
+          });
+          resolve(false);
+          return;
+        }
+        
+        resolve(true);
+      };
+      
+      img.onerror = () => {
+        toast({
+          title: "Invalid Image",
+          description: "The uploaded file appears to be corrupted or not a valid image.",
+          variant: "destructive",
+        });
+        resolve(false);
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileSelect = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -52,6 +91,14 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
     }
 
     setUploading(true);
+
+    // Perform security scan
+    const isSecure = await scanImageForSecurity(file);
+    if (!isSecure) {
+      setUploading(false);
+      event.target.value = '';
+      return;
+    }
 
     // Create preview
     const reader = new FileReader();
@@ -66,7 +113,7 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
       
       toast({
         title: "Image Selected",
-        description: "Image has been successfully selected.",
+        description: "Image has been successfully validated and selected.",
       });
     };
 
@@ -84,17 +131,47 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
   }, [onImageSelect, toast]);
 
   const handleUrlInput = (url: string) => {
-    // Basic URL validation
+    // Enhanced URL validation
     try {
       const urlObj = new URL(url);
       if (!['http:', 'https:'].includes(urlObj.protocol)) {
         throw new Error('Invalid protocol');
       }
       
-      if (!/\.(jpg|jpeg|png|gif|webp)$/i.test(url)) {
+      // Check for HTTPS in production
+      if (urlObj.protocol === 'http:' && window.location.protocol === 'https:') {
+        toast({
+          title: "Insecure URL",
+          description: "HTTPS URLs are required for security. Please use an HTTPS image URL.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (!/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(url)) {
         toast({
           title: "Invalid Image URL",
           description: "URL must point to a valid image file (.jpg, .jpeg, .png, .gif, .webp)",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Check for suspicious domains or patterns
+      const suspiciousPatterns = [
+        /localhost/i,
+        /127\.0\.0\.1/,
+        /192\.168\./,
+        /10\./,
+        /172\.16\./,
+        /javascript:/i,
+        /data:/i
+      ];
+      
+      if (suspiciousPatterns.some(pattern => pattern.test(url))) {
+        toast({
+          title: "Invalid URL",
+          description: "This URL type is not allowed for security reasons.",
           variant: "destructive",
         });
         return;
@@ -105,7 +182,7 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
       
       toast({
         title: "Image URL Added",
-        description: "Image URL has been successfully added.",
+        description: "Image URL has been successfully validated and added.",
       });
     } catch {
       toast({
@@ -174,8 +251,9 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
           />
         </div>
 
-        <div className="text-xs text-gray-500">
-          Max size: 5MB. Formats: JPEG, PNG, GIF, WebP
+        <div className="flex items-center space-x-1 text-xs text-gray-500">
+          <Shield className="h-3 w-3" />
+          <span>Max size: {SECURITY_CONFIG.MAX_FILE_SIZE / (1024 * 1024)}MB. Formats: JPEG, PNG, GIF, WebP</span>
         </div>
 
         <div className="relative">
@@ -183,7 +261,7 @@ const ImageUpload = ({ onImageSelect, currentImage, className }: ImageUploadProp
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or enter URL</span>
+            <span className="bg-background px-2 text-muted-foreground">Or enter HTTPS URL</span>
           </div>
         </div>
 

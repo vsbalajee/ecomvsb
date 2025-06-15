@@ -12,18 +12,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import CartDropdown from './CartDropdown';
+import { useIsAdmin } from '@/hooks/useUserRole';
 
 const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
-
-  // Simple admin check - in a real app, you'd check user roles from database
-  const isAdmin = user?.email === 'admin@example.com';
 
   return (
     <header className="bg-gray-900 text-white">
