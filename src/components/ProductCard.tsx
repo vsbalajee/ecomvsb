@@ -1,4 +1,3 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -26,7 +25,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
           alt={product.name}
           className="w-full h-40 sm:h-48 object-cover rounded-t-lg"
           onError={(e) => {
-            e.target.src = '/api/placeholder/300/200';
+            (e.target as HTMLImageElement).src = '/api/placeholder/300/200';
           }}
         />
         {product.stock_quantity <= 10 && product.stock_quantity > 0 && (

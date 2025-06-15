@@ -35,7 +35,7 @@ export const useOrders = (userId?: string) => {
         .from('orders')
         .select(`
           *,
-          order_items(
+          order_items!fk_order_items_order(
             *,
             products!fk_order_items_product(name, image_url)
           )
@@ -58,7 +58,7 @@ export const useAllOrders = () => {
         .from('orders')
         .select(`
           *,
-          order_items(
+          order_items!fk_order_items_order(
             *,
             products!fk_order_items_product(name, image_url)
           ),

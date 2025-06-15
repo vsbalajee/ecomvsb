@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrders } from '@/hooks/useOrders';
 import Header from '@/components/Header';
@@ -145,7 +144,7 @@ const Orders = () => {
                                   alt={item.products?.name || 'Product'}
                                   className="w-12 h-12 object-cover rounded"
                                   onError={(e) => {
-                                    e.target.src = '/api/placeholder/48/48';
+                                    (e.target as HTMLImageElement).src = '/api/placeholder/48/48';
                                   }}
                                 />
                                 <div className="flex-1">
