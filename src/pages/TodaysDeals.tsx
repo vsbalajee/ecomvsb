@@ -1,65 +1,73 @@
 
-import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import ProductGrid from '../components/ProductGrid';
+import { useProducts } from '@/hooks/useProducts';
+import ProductCard from '../components/ProductCard';
 import { Badge } from '@/components/ui/badge';
 
 const TodaysDeals = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  const { data: products, isLoading } = useProducts();
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
+  // Show first 8 products as "deals" with simulated discounts
+  const dealsProducts = products?.slice(0, 8).map(product => ({
+    ...product,
+    originalPrice: product.price * 1.3, // Simulate original price
+    discount: 30 // 30% off
+  })) || [];
 
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
       
-      {/* Hero Section */}
-      <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Today's Lightning Deals</h1>
-            <p className="text-xl mb-6">Limited-time offers that won't last long!</p>
-            <Badge className="bg-yellow-400 text-black px-4 py-2 text-lg">
-              Up to 70% OFF
-            </Badge>
-          </div>
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">Today's Deals</h1>
+          <p className="text-gray-600 text-sm sm:text-base">Limited time offers - Save big on top products!</p>
         </div>
+
+        {isLoading ? (
+          <div className="text-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+            <div className="text-lg">Loading deals...</div>
+          </div>
+        ) : (
+          <>
+            <div className="bg-red-600 text-white px-4 py-3 rounded-lg mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold">Flash Sale - Limited Time!</h2>
+                  <p className="text-sm">Up to 70% off on selected items</p>
+                </div>
+                <div className="mt-2 sm:mt-0">
+                  <Badge variant="secondary" className="bg-white text-red-600 font-bold">
+                    Ends in 2h 45m
+                  </Badge>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+              {dealsProducts.map((product) => (
+                <div key={product.id} className="relative">
+                  <Badge className="absolute top-2 left-2 z-10 bg-red-500 text-white">
+                    {product.discount}% OFF
+                  </Badge>
+                  <ProductCard product={product} />
+                  <div className="mt-2 text-center">
+                    <span className="text-gray-500 line-through text-sm">
+                      ₹{product.originalPrice.toFixed(2)}
+                    </span>
+                    <span className="text-green-600 font-bold ml-2">
+                      Save ₹{(product.originalPrice - product.price).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Deals Timer */}
-      <div className="bg-yellow-100 border-l-4 border-yellow-500 py-4">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-center">
-            <span className="text-lg font-semibold text-yellow-800">
-              ⏰ Deals end in: 23h 45m 12s
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <ProductGrid />
-      </div>
       <Footer />
     </div>
   );

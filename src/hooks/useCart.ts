@@ -1,8 +1,8 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 export interface CartItem {
   id: string;
@@ -22,6 +22,7 @@ export const useCart = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const cartQuery = useQuery({
     queryKey: ['cart', user?.id],
@@ -47,7 +48,16 @@ export const useCart = () => {
 
   const addToCartMutation = useMutation({
     mutationFn: async ({ productId, quantity = 1 }: { productId: string; quantity?: number }) => {
-      if (!user?.id) throw new Error('User not authenticated');
+      // Check if user is authenticated
+      if (!user?.id) {
+        toast({
+          title: "Sign In Required",
+          description: "Please sign in to add items to your cart.",
+          variant: "default",
+        });
+        navigate('/auth');
+        throw new Error('User not authenticated');
+      }
 
       if (quantity <= 0) {
         throw new Error('Quantity must be greater than 0');
@@ -103,12 +113,14 @@ export const useCart = () => {
       });
     },
     onError: (error: Error) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to add item to cart. Please try again.",
-        variant: "destructive",
-      });
-      console.error('Add to cart error:', error);
+      if (error.message !== 'User not authenticated') {
+        toast({
+          title: "Error",
+          description: error.message || "Failed to add item to cart. Please try again.",
+          variant: "destructive",
+        });
+        console.error('Add to cart error:', error);
+      }
     },
   });
 

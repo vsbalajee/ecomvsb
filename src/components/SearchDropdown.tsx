@@ -65,14 +65,14 @@ const SearchDropdown = ({ onSearch, className }: SearchDropdownProps) => {
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div className="flex">
-        <select className="bg-gray-300 text-black px-2 sm:px-3 py-2 rounded-l-md border-r text-xs sm:text-sm">
+        <select className="bg-gray-300 text-black px-1 sm:px-2 lg:px-3 py-2 rounded-l-md border-r text-xs">
           <option>All</option>
           <option>Electronics</option>
           <option>Books</option>
           <option>Clothing</option>
         </select>
         <Input 
-          className="flex-1 rounded-none border-0 text-xs sm:text-sm text-black" 
+          className="flex-1 rounded-none border-0 text-xs sm:text-sm text-black h-10" 
           placeholder="Search ECOM"
           value={searchQuery}
           onChange={(e) => {
@@ -87,10 +87,10 @@ const SearchDropdown = ({ onSearch, className }: SearchDropdownProps) => {
           }}
         />
         <Button 
-          className="bg-orange-400 hover:bg-orange-500 rounded-l-none px-2 sm:px-4"
+          className="bg-orange-400 hover:bg-orange-500 rounded-l-none px-2 sm:px-3 lg:px-4 h-10"
           onClick={() => handleSearch()}
         >
-          <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+          <Search className="h-4 w-4" />
         </Button>
       </div>
 
@@ -100,16 +100,16 @@ const SearchDropdown = ({ onSearch, className }: SearchDropdownProps) => {
           {filteredProducts.map((product) => (
             <div
               key={product.id}
-              className="px-4 py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
+              className="px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-100 cursor-pointer border-b border-gray-100 last:border-b-0"
               onClick={() => handleProductClick(product.name)}
             >
-              <div className="flex items-center space-x-3">
-                <Search className="h-4 w-4 text-gray-400" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">{product.name}</div>
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Search className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs sm:text-sm font-medium text-gray-900 truncate">{product.name}</div>
                   <div className="text-xs text-gray-500 truncate">{product.description}</div>
                 </div>
-                <div className="text-sm font-semibold text-orange-600">
+                <div className="text-xs sm:text-sm font-semibold text-orange-600 flex-shrink-0">
                   ₹{product.price.toFixed(2)}
                 </div>
               </div>
