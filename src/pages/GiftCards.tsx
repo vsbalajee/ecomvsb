@@ -1,140 +1,87 @@
 
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Gift, CreditCard, Mail, Smartphone } from 'lucide-react';
+import { Gift, CreditCard, Smartphone, Mail } from 'lucide-react';
 
 const GiftCards = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const [selectedAmount, setSelectedAmount] = useState('25');
-
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate('/auth');
-    }
-  }, [user, loading, navigate]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="text-lg">Loading...</div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const amounts = ['10', '25', '50', '100', '250', '500'];
-  const designs = [
-    { name: 'Birthday', image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop' },
-    { name: 'Thank You', image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&h=200&fit=crop' },
-    { name: 'Congratulations', image: 'https://images.unsplash.com/photo-1464207687429-7505649dae38?w=300&h=200&fit=crop' },
-    { name: 'Holiday', image: 'https://images.unsplash.com/photo-1512389142860-9c449e58a543?w=300&h=200&fit=crop' }
+  const giftCardDesigns = [
+    { id: 1, name: 'Birthday Celebration', image: 'https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?w=300&h=200&fit=crop', color: 'bg-pink-100' },
+    { id: 2, name: 'Thank You', image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop', color: 'bg-blue-100' },
+    { id: 3, name: 'Congratulations', image: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=300&h=200&fit=crop', color: 'bg-green-100' },
+    { id: 4, name: 'Just Because', image: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=300&h=200&fit=crop', color: 'bg-purple-100' },
   ];
+
+  const amounts = [500, 1000, 2000, 5000, 10000];
 
   return (
     <div className="min-h-screen bg-gray-100">
       <Header />
       
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">Amazon Gift Cards</h1>
-          <p className="text-xl text-gray-600">The perfect gift for any occasion</p>
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">Gift Cards</h1>
+          <p className="text-gray-600 text-lg">The perfect gift for any occasion</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Gift Card Builder */}
+          {/* Gift Card Purchase */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Gift className="h-5 w-5 mr-2" />
-                Design Your Gift Card
+                <Gift className="h-6 w-6 mr-2 text-orange-500" />
+                Purchase Gift Card
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* Amount Selection */}
-              <div>
-                <label className="block text-sm font-medium mb-2">Amount</label>
-                <div className="grid grid-cols-3 gap-2 mb-2">
-                  {amounts.map((amount) => (
-                    <button
-                      key={amount}
-                      onClick={() => setSelectedAmount(amount)}
-                      className={`p-2 text-center border rounded ${
-                        selectedAmount === amount 
-                          ? 'border-orange-500 bg-orange-50' 
-                          : 'border-gray-300'
-                      }`}
-                    >
-                      ₹{amount}
-                    </button>
-                  ))}
-                </div>
-                <Input 
-                  placeholder="Custom amount" 
-                  value={selectedAmount}
-                  onChange={(e) => setSelectedAmount(e.target.value)}
-                />
-              </div>
-
               {/* Design Selection */}
               <div>
-                <label className="block text-sm font-medium mb-2">Choose Design</label>
+                <h3 className="font-semibold mb-3">Choose Design</h3>
                 <div className="grid grid-cols-2 gap-3">
-                  {designs.map((design, index) => (
-                    <div key={index} className="relative cursor-pointer border-2 border-gray-200 rounded-lg overflow-hidden hover:border-orange-500">
-                      <img src={design.image} alt={design.name} className="w-full h-24 object-cover" />
-                      <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 text-center">
-                        {design.name}
-                      </div>
+                  {giftCardDesigns.map((design) => (
+                    <div key={design.id} className="cursor-pointer border-2 border-transparent hover:border-orange-500 rounded-lg">
+                      <img 
+                        src={design.image} 
+                        alt={design.name}
+                        className="w-full h-24 object-cover rounded-lg"
+                      />
+                      <p className="text-sm text-center mt-1">{design.name}</p>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Delivery Options */}
+              {/* Amount Selection */}
               <div>
-                <label className="block text-sm font-medium mb-2">Delivery Method</label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="radio" name="delivery" className="mr-2" defaultChecked />
-                    <Mail className="h-4 w-4 mr-2" />
-                    Email (Instant delivery)
-                  </label>
-                  <label className="flex items-center">
-                    <input type="radio" name="delivery" className="mr-2" />
-                    <Smartphone className="h-4 w-4 mr-2" />
-                    Text Message
-                  </label>
-                  <label className="flex items-center">
-                    <input type="radio" name="delivery" className="mr-2" />
-                    <CreditCard className="h-4 w-4 mr-2" />
-                    Physical Card (₹20 additional)
-                  </label>
+                <h3 className="font-semibold mb-3">Select Amount</h3>
+                <div className="grid grid-cols-3 gap-3 mb-3">
+                  {amounts.map((amount) => (
+                    <Button key={amount} variant="outline" className="h-12">
+                      ₹{amount}
+                    </Button>
+                  ))}
+                </div>
+                <Input placeholder="Custom amount" type="number" />
+              </div>
+
+              {/* Recipient Details */}
+              <div>
+                <h3 className="font-semibold mb-3">Recipient Details</h3>
+                <div className="space-y-3">
+                  <Input placeholder="Recipient's name" />
+                  <Input placeholder="Recipient's email" type="email" />
+                  <textarea 
+                    className="w-full p-3 border rounded-md resize-none"
+                    rows={3}
+                    placeholder="Personal message (optional)"
+                  />
                 </div>
               </div>
 
-              <div className="space-y-3">
-                <Input placeholder="Recipient's email" />
-                <Input placeholder="From (your name)" />
-                <textarea 
-                  placeholder="Personal message (optional)"
-                  className="w-full p-3 border rounded-md"
-                  rows={3}
-                />
-              </div>
-
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-lg py-3">
-                Buy Gift Card - ₹{selectedAmount}
+              <Button className="w-full" size="lg">
+                Add to Cart - ₹1000
               </Button>
             </CardContent>
           </Card>
@@ -143,35 +90,28 @@ const GiftCards = () => {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Why Choose Amazon Gift Cards?</CardTitle>
+                <CardTitle>Delivery Options</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <Badge className="bg-green-500">✓</Badge>
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-blue-500" />
                   <div>
-                    <h4 className="font-semibold">No expiry date</h4>
-                    <p className="text-gray-600">Gift cards never expire</p>
+                    <h4 className="font-semibold">Email Delivery</h4>
+                    <p className="text-sm text-gray-600">Instant delivery to recipient's email</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3">
-                  <Badge className="bg-green-500">✓</Badge>
+                <div className="flex items-center space-x-3">
+                  <Smartphone className="h-5 w-5 text-green-500" />
                   <div>
-                    <h4 className="font-semibold">Instant delivery</h4>
-                    <p className="text-gray-600">Email gift cards arrive within minutes</p>
+                    <h4 className="font-semibold">Mobile Delivery</h4>
+                    <p className="text-sm text-gray-600">Send via SMS to mobile number</p>
                   </div>
                 </div>
-                <div className="flex items-start space-x-3">
-                  <Badge className="bg-green-500">✓</Badge>
+                <div className="flex items-center space-x-3">
+                  <CreditCard className="h-5 w-5 text-purple-500" />
                   <div>
-                    <h4 className="font-semibold">Millions of items</h4>
-                    <p className="text-gray-600">Redeemable on anything sold by Amazon</p>
-                  </div>
-                </div>
-                <div className="flex items-start space-x-3">
-                  <Badge className="bg-green-500">✓</Badge>
-                  <div>
-                    <h4 className="font-semibold">Easy to redeem</h4>
-                    <p className="text-gray-600">Apply to your account with one click</p>
+                    <h4 className="font-semibold">Physical Card</h4>
+                    <p className="text-sm text-gray-600">Beautiful printed card delivered to address</p>
                   </div>
                 </div>
               </CardContent>
@@ -179,37 +119,35 @@ const GiftCards = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Gift Card Balance</CardTitle>
-                <CardDescription>Check or redeem your gift card</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Input placeholder="Enter gift card code" />
-                <div className="flex space-x-2">
-                  <Button variant="outline" className="flex-1">
-                    Check Balance
-                  </Button>
-                  <Button className="flex-1 bg-orange-500 hover:bg-orange-600">
-                    Redeem
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Corporate Gift Cards</CardTitle>
-                <CardDescription>Perfect for employee rewards and client gifts</CardDescription>
+                <CardTitle>Gift Card Features</CardTitle>
               </CardHeader>
               <CardContent>
+                <ul className="space-y-2 text-sm">
+                  <li>• Valid for 12 months from purchase date</li>
+                  <li>• Can be used for any product on our platform</li>
+                  <li>• Remaining balance carries forward</li>
+                  <li>• Easy to redeem at checkout</li>
+                  <li>• No additional processing fees</li>
+                  <li>• Can be combined with other offers</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Redeem Gift Card</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Input placeholder="Enter gift card code" />
                 <Button variant="outline" className="w-full">
-                  Learn More About Bulk Orders
+                  Check Balance
                 </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

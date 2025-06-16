@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/sheet';
 import CartDropdown from './CartDropdown';
 import SearchDropdown from './SearchDropdown';
+import LocationSelector from './LocationSelector';
 import { useIsAdmin } from '@/hooks/useUserRole';
 
 const Header = () => {
@@ -54,10 +55,7 @@ const Header = () => {
       {/* Top bar */}
       <div className="bg-gray-800 text-sm py-1 sm:py-2">
         <div className="max-w-7xl mx-auto px-2 sm:px-4 flex justify-between items-center">
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <span className="hidden sm:block text-xs sm:text-sm">Deliver to Your Location</span>
-            <span className="sm:hidden text-xs">Deliver</span>
-          </div>
+          <LocationSelector />
           <div className="flex items-center space-x-1 sm:space-x-4">
             {user ? (
               <>
@@ -65,10 +63,12 @@ const Header = () => {
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="text-white hover:bg-gray-700 text-xs p-1 sm:p-2">
                       <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                      <span className="hidden sm:inline">Hello, </span>
-                      <span className="truncate max-w-16 sm:max-w-20">
-                        {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                      </span>
+                      <div className="flex flex-col items-start">
+                        <span className="text-xs text-gray-300">Hello,</span>
+                        <span className="text-xs sm:text-sm font-semibold truncate max-w-16 sm:max-w-20">
+                          {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                        </span>
+                      </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-48 bg-white" align="end">
@@ -100,7 +100,10 @@ const Header = () => {
               <Link to="/auth">
                 <Button variant="ghost" className="text-white hover:bg-gray-700 text-xs p-1 sm:p-2">
                   <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                  <span className="text-xs">Sign In</span>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-gray-300">Hello, sign in</span>
+                    <span className="text-xs sm:text-sm font-semibold">Account & Lists</span>
+                  </div>
                 </Button>
               </Link>
             )}
