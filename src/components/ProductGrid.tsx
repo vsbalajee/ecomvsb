@@ -16,9 +16,7 @@ const ProductGrid = () => {
 
   useEffect(() => {
     const urlSearch = searchParams.get('search');
-    if (urlSearch) {
-      setSearchQuery(urlSearch);
-    }
+    setSearchQuery(urlSearch ?? '');
   }, [searchParams]);
 
   const handleSearch = (query: string) => {
